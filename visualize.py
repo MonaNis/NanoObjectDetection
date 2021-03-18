@@ -139,13 +139,14 @@ def Plot2DScatter(x_np,y_np,title = None, xlabel = None, ylabel = None, myalpha 
 
 
 
-def Plot2DImage(array_np,title = None, xlabel = None, ylabel = None, ShowColorBar = True):
+def Plot2DImage(array_np,title = None, xlabel = None, ylabel = None, ShowColorBar = True,
+                figsize=[16,5]):
     """ plot image in standardized format """
     
-    from NanoObjectDetection.PlotProperties import axis_font, title_font, params
+    from NanoObjectDetection.PlotProperties import axis_font, title_font#, params
 
     
-    plt.figure()
+    plt.figure(figsize=figsize)
     plt.imshow(array_np, cmap='gray')
     
     if ShowColorBar == True:
@@ -689,7 +690,7 @@ def PlotDiameterPDF(ParameterJsonFile, sizes_df_lin, plotInSizesSpace=True,
     -------
     PDF, grid, ax, fit
     """
-    import NanoObjectDetection as nd
+    import NanoObjectDetection_Mfork as nd
     settings = nd.handle_data.ReadJson(ParameterJsonFile)
     
     DiameterPDF_Show = settings["Plot"]['DiameterPDF_Show']
@@ -1175,7 +1176,8 @@ def PlotInfoboxMN(ax, means, CVs, weights, medians, unit='nm', resInt=''):
     props = dict(boxstyle='round', facecolor='honeydew', alpha=0.7)
     
     # choose median from strongest contribution (= position of highest peak)
-    mMax = medians[np.where(weights==weights.max())]
+    weights = np.array(weights)
+    mMax = medians[np.where(weights==weights.max())[0][0]]
     if mMax < (sum(ax.get_xlim())/2): # highest peak left from plot center
         x_text = 0.65 - (0.05*len(weights)) # display text box on the right
     else:
@@ -1303,8 +1305,8 @@ def export(save_folder_name, save_image_name, settings = None, use_dpi = None, d
     if ShowPlot == False:
         nd.logger.info("Close plot since noone wants it")
         plt.close(plt.gcf())   
-    elif ShowPlot == -1:
-        nd.logger.info("You can prevent the plot to be shown if you just wanna save it in the export function")
+    # elif ShowPlot == -1:
+    #     nd.logger.info("You can prevent the plot to be shown if you just wanna save it in the export function")
         
          
     return settings

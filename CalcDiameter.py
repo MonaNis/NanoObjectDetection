@@ -37,7 +37,7 @@ def Main2(t6_final, ParameterJsonFile, MSD_fit_Show = False, yEval = False,
     #setup return variable
     sizes_df_lin=pd.DataFrame(columns={'diameter','particle'})       
     
-    nd.logger.warning("Variable sizes_df_lin_rolling is not longer calculated. That might be inserted later again. If you have this return variable in your CalcDiameter.Main2 function that will cause an error.")
+    # nd.logger.warning("Variable sizes_df_lin_rolling is not longer calculated. That might be inserted later again. If you have this return variable in your CalcDiameter.Main2 function that will cause an error.")
         
     #boolean for plotting stuff
     any_successful_check = False
@@ -66,7 +66,7 @@ def Main2(t6_final, ParameterJsonFile, MSD_fit_Show = False, yEval = False,
     else:
         ExportResultsMain(ParameterJsonFile, settings, sizes_df_lin)       
     
-    nd.logger.info("WARNING sizes_df_lin_rolling is removed!!!")
+    # nd.logger.info("WARNING sizes_df_lin_rolling is removed!!!")
     
     return sizes_df_lin, any_successful_check
 

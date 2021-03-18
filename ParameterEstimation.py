@@ -870,8 +870,8 @@ def FindMaxDisplacementTrackpy(ParameterJsonFile, GuessLowestDiameter_nm = None)
     settings["Link"]["Max displacement"] = Max_displacement 
 
 
-    # Estimate the distance TWO particle must be apart in order to successfully link them in the next frame without interchanging them.
-    # 7sigma leads to 1 in a million of mixing up two particle by nearest neighbor linking
+    # Estimate the distance TWO particles must be apart in order to successfully link them in the next frame without interchanging them.
+    # 7sigma leads to 1 in a million of mixing up two particles by nearest neighbor linking
     Min_Separation_diff = 7 * sigma_diff_px
     
     # sigma of the PSF  

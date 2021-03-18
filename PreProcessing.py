@@ -246,6 +246,7 @@ def StaticBackground_Median(rawframes_np_loop, num_frames):
     return static_background
 
 
+
 def StaticBackground_Mean(rawframes_np_loop):
     """
     Calculate the background by a combination of mean and median
@@ -303,7 +304,8 @@ def Remove_StaticBackground(rawframes_np, settings, Background_Show = False, Bac
         if Background_Show == True:
             #plt.imshow(static_background)
             nd.visualize.Plot2DImage(static_background,title = "Background image", \
-                                     xlabel = "[Px]", ylabel = "[Px]", ShowColorBar = ShowColorBar)
+                                     xlabel = "[Px]", ylabel = "[Px]", ShowColorBar = ShowColorBar,
+                                     figsize=[24,4])
             
         
         if Background_Save == True:

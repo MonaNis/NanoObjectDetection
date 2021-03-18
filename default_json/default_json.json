@@ -59,17 +59,17 @@
           "fac_frame": 1
      },
      "PreProcessing": {
-          "Remove_CameraOffset": 1,
+          "Remove_CameraOffset": 0,
           "Remove_Laserfluctuation": 0,
           "Remove_StaticBackground": 1,
           "RollingPercentilFilter": 0,
           "RollingPercentilFilter_rolling_step": 10,
           "RollingPercentilFilter_rolling_length": 200,
           "RollingPercentilFilter_percentile_filter": 80,
-          "ClipNegativeValue": 1,
+          "ClipNegativeValue": 0,
           "Do_or_apply_data_rotation": 0,
           "rot_angle": 0,
-          "EnhanceSNR": 1,
+          "EnhanceSNR": 0,
           "KernelSize": "auto"
      },
      "Help": {
@@ -94,7 +94,7 @@
           "Max displacement": 3,
           "Max displacement fix": 0.3,
           "Min tracking frames before drift": 30.0,
-          "Min_tracking_frames": 150.0
+          "Min_tracking_frames": 100.0
      },
      "StationaryObjects": {
           "Analyze fixed spots": 1,
@@ -131,17 +131,17 @@
           "skip_image_fac": 10
      },
      "Plot": {
-          "Background_Show": 0,
-          "Background_Save": 0,
+          "Background_Show": 1,
+          "Background_Save": 1,
           "Laserfluctuation_Show": 0,
           "Laserfluctuation_Save": 0,
           "MSD_fit_Show": 1,
-          "MSD_fit_Save": 0,
+          "MSD_fit_Save": 1,
           "Histogramm_Show": 1,
           "Histogramm_Save": 1,
           "Histogramm_Fit_1_Particle": 0,
-          "Histogramm_time_Show": 0,
-          "Histogramm_time_Save": 0,
+          "Histogramm_time_Show": 1,
+          "Histogramm_time_Save": 1,
           "Histogramm_Bins_Auto": 1,
           "Histogramm_Bins": 3,
           "Histogramm_min_max_auto": 1,
@@ -153,8 +153,8 @@
           "PDF_min": 0.0,
           "PDF_max": 1000.0,
           "PDF_show_fit": 0,
-          "DiamOverTraj_Show": 0,
-          "DiamOverTraj_Save": 0,
+          "DiamOverTraj_Show": 1,
+          "DiamOverTraj_Save": 1,
           "Correlation_Show": 0,
           "Correlation_Save": 0,
           "Pearson_Show": 0,

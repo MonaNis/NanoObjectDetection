@@ -20,7 +20,7 @@ from pdb import set_trace as bp #debugger
 
 def Main(rawframes_super, rawframes_pre, ParameterJsonFile):
     """
-    Runs the various routines for optimiting and estimating the localizing and trackpy parameters of trackpy
+    runs the various routines for optimiting and estimating the localizing and trackpy parameters of trackpy
     """
     
     settings = nd.handle_data.ReadJson(ParameterJsonFile)
@@ -55,7 +55,7 @@ def Main(rawframes_super, rawframes_pre, ParameterJsonFile):
         #run the full auto routine and optimize both together
         DoDiameter = True
             
-    # optimize minmass to identify particle
+    # optimize minmass to identify particles
     FindMinmass(rawframes_super, rawframes_pre, ParameterJsonFile, DoDiameter = DoDiameter)
         
                 

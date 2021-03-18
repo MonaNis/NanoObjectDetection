@@ -46,7 +46,13 @@ rawframes_pre, static_background = nd.PreProcessing.Main(rawframes_super, Parame
 settings = nd.handle_data.ReadJson(ParameterJsonFile)
 
 nd.AdjustSettings.Main(rawframes_super, rawframes_pre, ParameterJsonFile)
-    
+   
+""" set 'tp_minmass' to 70% of the automatically found value  """
+#%% check 1 annotated raw frame
+from trackpy import annotate
+obj_firstFrame = nd.get_trajectorie.FindSpots(rawframes_pre[0:2,:,:], ParameterJsonFile)
+fig,ax=plt.subplots()
+annotate(obj_firstFrame[obj_firstFrame.frame==0],rawframes_pre[0,:,:])
 
 #%% find the objects
 obj_all = nd.get_trajectorie.FindSpots(rawframes_pre, ParameterJsonFile)
@@ -90,12 +96,12 @@ t3_gapless = nd.get_trajectorie.calc_intensity_fluctuations(t3_gapless, Paramete
 t4_cutted, t4_cutted_no_gaps = nd.get_trajectorie.split_traj(t2_long, t3_gapless, ParameterJsonFile)
 
 
-#%% drift correction
+#%% calculate drift but don't apply correction unless it's really necessary
 t5_no_drift = nd.Drift.Main(t4_cutted, ParameterJsonFile, PlotGlobalDrift = True)
 
 
 #%% only long trajectories are used in the MSD plot in order to get a good fit
-t6_final = nd.get_trajectorie.filter_stubs(t5_no_drift, ParameterJsonFile, FixedParticles = False, BeforeDriftCorrection = False, PlotErrorIfTestFails = False)
+t6_final = nd.get_trajectorie.filter_stubs(t4_cutted, ParameterJsonFile, FixedParticles = False, BeforeDriftCorrection = False, PlotErrorIfTestFails = False)
 
 # #%% export/import t6_final
 # t6_final.to_csv('\\\\mars\\user\\nissenmona\\4 Nanoparticle detection+tracking\\Au_OlympusSetup\\20210208_P100+125mix\\DataAnalysis\\v6_620fps_220usET_longer\\t6_final.csv',sep='\t',decimal=',')

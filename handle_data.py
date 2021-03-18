@@ -221,7 +221,7 @@ def ReadData2Numpy(ParameterJsonFile, PerformSanityCheck=True):
         CheckForRepeatedFrames(rawframes_np)
         
         # check if camera is saturated
-        rawframes_np, max_value = CheckForSaturation(rawframes_np)
+        rawframes_np, max_value = CheckForSaturation(rawframes_np, warnUser=False)
         settings["Find"]["SaturatedPixelValue"] = max_value
 
     # check bit depth if auto
@@ -235,6 +235,7 @@ def ReadData2Numpy(ParameterJsonFile, PerformSanityCheck=True):
     nd.handle_data.WriteJson(ParameterJsonFile, settings)
 
     return rawframes_np
+
 
 
 def CalcBitDepth(image):
@@ -352,13 +353,13 @@ def CheckForSaturation(rawframes_np,warnUser=True):
     # have every frames only once
     frames = np.unique(frames)
     
-    # select first 10 frames, otherwise the following calcuation takes to long
+    # select first 10 frames, otherwise the following calcuation takes too long
     if len(frames) > 10:
         frames_first_10 = frames[0:10]
     else:
         frames_first_10 = frames
     
-    # 8Bit image (works for 10 and 12 bits too)
+    # 8Bit image (works for 10 and 12 bits, too)
     num_bins = 2**8
     
     plt.figure()
@@ -373,7 +374,7 @@ def CheckForSaturation(rawframes_np,warnUser=True):
     if warnUser==True:
         ValidInput = False
         
-        IsSaturated = nd.handle_data.GetInput("An intensity histogram should be plotted. The highest intensity bin should not be a peak. If you see such a peak, you probably have saturation. But maybe you choose the exposure time to large on purpuse, ignore saturated areas, because your are interested in something very dim. In this case you should treat your data like you have no saturation.", ["y", "n"])
+        IsSaturated = nd.handle_data.GetInput("An intensity histogram should be plotted. The highest intensity bin should not be a peak. If you see such a peak, you probably have saturation. But maybe you choose the exposure time too large on purpose, ignore saturated areas, because your are interested in something very dim. In this case you should treat your data like you have no saturation.", ["y", "n"])
         
 
         if IsSaturated  == "n":
@@ -675,7 +676,7 @@ def total_intensity(rawframes_np, display = False):
     rel_intensity: relative intensity with respect to the mean
     can be used to remove laser fluctuations
     """
-    import NanoObjectDetection as nd
+    import NanoObjectDetection_Mfork as nd
     # intensity in each frame
     tot_intensity = np.sum(rawframes_np,axis=(1,2))
     
@@ -817,7 +818,7 @@ def GetVarOfSettings(settings, key, entry):
 
 
 def GetNumberVerbose():
-    #decides how many outputs are done in each parallel multiprocessing run
+    """ decides how many outputs are done in each parallel multiprocessing run """
     
     level = nd.logger.getEffectiveLevel()
     
@@ -830,6 +831,7 @@ def GetNumberVerbose():
         
     return verbose
     
+
     
 def GetInput(InputText, ListAllowedValues):
     "This function checks if inserted value of the input function are valid"

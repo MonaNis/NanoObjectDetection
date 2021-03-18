@@ -231,7 +231,7 @@ def link_df(obj, ParameterJsonFile, SearchFixedParticles = False, max_displaceme
         max_displacement = settings["Link"]["Max displacement fix"]
 
     # here comes the linking
-    nd.logger.info("Linking particles to trajectories: staring...")
+    nd.logger.info("Linking particles to trajectories: starting...")
 
     if nd.logger.getEffectiveLevel() >= 20:
         # Switch the logging of for the moment
@@ -241,7 +241,7 @@ def link_df(obj, ParameterJsonFile, SearchFixedParticles = False, max_displaceme
 
     nd.logger.info("Linking particles to trajectories: ...finished")
     if nd.logger.getEffectiveLevel() >= 20:
-        # Switch the logging of for the moment
+        # Switch the logging off for the moment
         tp.quiet(suppress=False)
 
 
@@ -266,7 +266,7 @@ def filter_stubs(traj_all, ParameterJsonFile, FixedParticles = False,
     """
     settings = nd.handle_data.ReadJson(ParameterJsonFile)
 
-    nd.logger.info("Remove to short trajectories.")
+    nd.logger.info("Remove too short trajectories.")
 
     if (FixedParticles == True) and (BeforeDriftCorrection == True):
         # STATIONARY particles must have a specfic minimum length - otherwise it is noise
@@ -285,7 +285,7 @@ def filter_stubs(traj_all, ParameterJsonFile, FixedParticles = False,
         min_tracking_frames = settings["Link"]["Min_tracking_frames"]
 
 
-    nd.logger.info("Minimum trajectorie length: %s", min_tracking_frames)
+    nd.logger.info("Minimum trajectory length: %s", min_tracking_frames)
 
     # only keep the trajectories with the given minimum length
     traj_min_length = tp.filter_stubs(traj_all, min_tracking_frames)
@@ -507,7 +507,7 @@ def RemoveOverexposedObjects(ParameterJsonFile, obj_moving, rawframes_rot):
         nd.logger.info("No saturated pixel")
         
     else:
-        nd.logger.info("Remove objects that have saturated pixels")
+        # nd.logger.info("Remove objects that have saturated pixels")
 
         # bring objects in order of ascending intensity values ("mass")
         sort_obj_moving = obj_moving.sort_values("raw_mass")
@@ -533,7 +533,7 @@ def RemoveOverexposedObjects(ParameterJsonFile, obj_moving, rawframes_rot):
                 signal_at_max = rawframes_rot[frame,pos_y,pos_x]
                 
             if signal_at_max >= SaturatedPixelValue:
-                nd.logger.debug("Remove overexposed particles")
+                # nd.logger.debug("Remove overexposed particles")
                 sort_obj_moving = sort_obj_moving.iloc[:-1] # kick the overexposed object out
                 counter += 1
     
@@ -543,7 +543,7 @@ def RemoveOverexposedObjects(ParameterJsonFile, obj_moving, rawframes_rot):
             else:
                 saturated_psf = False
 
-        nd.logger.info("Removed %i overexposed particles (%.3f %%)", counter, 100*counter/total)
+        nd.logger.info("Removed {} overexposed particles ({:.3f} %) in {} frames".format(counter, 100*counter/total,framecount))
 
         #undo the sorting
         obj_moving = sort_obj_moving.sort_values(["frame", "x"])
