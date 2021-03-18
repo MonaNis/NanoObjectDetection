@@ -11,14 +11,14 @@ import numpy as np
 def Dilution(d_channel, d_goal, mode = "c_stock", c_stock = None):
     """
     d_channel: diameter of the channel in m
-    d_goal: distance between two NP inside the fiber m
+    d_goal: distance between two NPs inside the fiber m
     mode: parameters given
         "c_stock", NP/ml
     
     c_stock: NP/ml
     """
     
-    #channel crosssection
+    #channel cross section
     A_channel = np.pi * d_channel**2 / 4
     
     #1ml = 10^-6 m^3

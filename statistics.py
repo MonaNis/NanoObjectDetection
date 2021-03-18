@@ -10,7 +10,7 @@ collection of functions for statistical information on the tracking data
 """
 import numpy as np
 import pandas as pd
-import NanoObjectDetection as nd
+import NanoObjectDetection_Mfork as nd
 
 from pdb import set_trace as bp #debugger
 

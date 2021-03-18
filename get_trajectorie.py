@@ -16,7 +16,7 @@ import sys
 import multiprocessing
 from joblib import Parallel, delayed
 
-import NanoObjectDetection as nd
+import NanoObjectDetection_Mfork as nd
 import matplotlib.pyplot as plt # Libraries for plotting
 from tqdm import tqdm# progress bar
 # from pdb import set_trace as bp

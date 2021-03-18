@@ -9,7 +9,7 @@ Created on Fri Sep 13 15:20:48 2019
 set up everything from scratch to evaluate new experimental data
 """
 
-import NanoObjectDetection as nd
+import NanoObjectDetection_Mfork as nd
 import shutil
 import os
 #from pdb import set_trace as bp #debugger

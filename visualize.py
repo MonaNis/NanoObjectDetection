@@ -33,7 +33,7 @@ from pdb import set_trace as bp #debugger
 import scipy
 import os.path
 
-import NanoObjectDetection as nd
+import NanoObjectDetection_Mfork as nd
 
 ## unused for the moment:
 #import time

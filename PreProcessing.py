@@ -6,7 +6,7 @@ Created on Mon Feb 18 11:09:16 2019
 """
 
 
-import NanoObjectDetection as nd
+import NanoObjectDetection_Mfork as nd
 import numpy as np
 import matplotlib.pyplot as plt
 #from pdb import set_trace as bp #debugger

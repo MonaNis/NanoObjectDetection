@@ -12,7 +12,7 @@ import numpy as np
 # from pdb import set_trace as bp #debugger
 import psf
 import multiprocessing
-import NanoObjectDetection as nd
+import NanoObjectDetection_Mfork as nd
 from joblib import Parallel, delayed
 from scipy.constants import Boltzmann as k_b
 from scipy.constants import pi as pi

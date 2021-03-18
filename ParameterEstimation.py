@@ -4,7 +4,7 @@ Created on Thu Feb 27 15:12:14 2020
 
 @author: foersterronny
 """
-import NanoObjectDetection as nd
+import NanoObjectDetection_Mfork as nd
 import numpy as np
 import matplotlib.pyplot as plt
 from pdb import set_trace as bp #debugger

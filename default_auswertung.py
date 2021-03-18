@@ -15,12 +15,12 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 # own Library
-import NanoObjectDetection as nd
+import NanoObjectDetection_Mfork as nd
 
 
 #%% path of parameter file
 # this must be replaced by any json file
-ParameterJsonFile = r'Insert Json Path here, like: Z:\Datenauswertung\Ronny_Foerster\sdl_80nm\parameter.json'
+ParameterJsonFile = '\\\\mars\\user\\nissenmona\\4 Nanoparticle detection+tracking\\Au_OlympusSetup\\...\\DataAnalysis\\...\\parameter.json'
 
 
 #%% check if the python version and the library are good
@@ -97,16 +97,31 @@ t5_no_drift = nd.Drift.Main(t4_cutted, ParameterJsonFile, PlotGlobalDrift = True
 #%% only long trajectories are used in the MSD plot in order to get a good fit
 t6_final = nd.get_trajectorie.filter_stubs(t5_no_drift, ParameterJsonFile, FixedParticles = False, BeforeDriftCorrection = False, PlotErrorIfTestFails = False)
 
+# #%% export/import t6_final
+# t6_final.to_csv('\\\\mars\\user\\nissenmona\\4 Nanoparticle detection+tracking\\Au_OlympusSetup\\20210208_P100+125mix\\DataAnalysis\\v6_620fps_220usET_longer\\t6_final.csv',sep='\t',decimal=',')
+# t6_final = pd.read_csv('\\\\mars\\user\\nissenmona\\4 Nanoparticle detection+tracking\\Au_OlympusSetup\\20210208_P100+125mix\\DataAnalysis\\v6_620fps_220usET_longer\\t6_final.csv',sep='\t',decimal=',')
+
 
 #%% calculate the MSD and process to diffusion and diameter
-# sizes_df_lin, sizes_df_lin_rolling , any_successful_check = nd.CalcDiameter.Main(t6_final, ParameterJsonFile, obj_all, MSD_fit_Show = True, t_beforeDrift = t4_cutted)
-
-sizes_df_lin, any_successful_check = nd.CalcDiameter.Main2(t6_final, ParameterJsonFile, MSD_fit_Show = True)
+sizes_df_lin, any_successful_check = nd.CalcDiameter.Main2(t6_final, ParameterJsonFile, 
+                                                           MSD_fit_Show = True,t_beforeDrift = t4_cutted)
 
 #sizes_df_lin, any_successful_check = nd.CalcDiameter.OptimizeTrajLenght(t6_final, ParameterJsonFile, obj_all, MSD_fit_Show = True, t_beforeDrift = t4_cutted)
 
 
+# #%% re-import sizes_df
+# sizes_df = pd.read_csv('\\\\mars\\user\\nissenmona\\4 Nanoparticle detection+tracking\\Au_OlympusSetup\\20210208_P100+125mix\\DataAnalysis\\v6_620fps_220usET_longer\\210302\\12_23_32_sizes_df_lin.csv')
+
 #%% visualize results
 nd.visualize.PlotDiameters(ParameterJsonFile, sizes_df_lin, any_successful_check)
 
-#nd.visualize.AnimateDiameterAndRawData_Big2(rawframes_ROI, static_background, rawframes_pre, sizes_df_lin, t4_cutted_no_gaps, ParameterJsonFile)
+#%% further plotting
+Nfmin = 1000
+nd.visualize.DiameterHistogramm(ParameterJsonFile,
+                                sizes_df_lin[sizes_df_lin['valid frames']>=Nfmin],
+                                weighting=True, showInfobox=True, fitNdist=True,
+                                showICplot=False,
+                                num_dist_max=2, fitInvSizes=False, showInvHist=False)
+
+
+

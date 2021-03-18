@@ -15,7 +15,7 @@ import matplotlib
 import logging
 
 #import matplotlib.pyplot as plt # Libraries for plotting
-import NanoObjectDetection as nd
+import NanoObjectDetection_Mfork as nd
 
 from pdb import set_trace as bp #debugger
 

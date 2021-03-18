@@ -15,7 +15,7 @@ from __future__ import division, unicode_literals, print_function # For compatib
 from importlib import reload # only used for debugging --> reload(package_name)
 
 # Own Library
-import NanoObjectDetection as nd
+import NanoObjectDetection_Mfork as nd
 
 # path of parameter file
 ParameterJsonFile = "Z:\\Datenauswertung\\Torsten_Wieduwilt\\190322\\100nist_2000_40fps_0\\100nist_2000_40fps_0.json"

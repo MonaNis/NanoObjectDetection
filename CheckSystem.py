@@ -10,7 +10,7 @@ import trackpy as tp
 import pandas as pd
 #from pdb import set_trace as bp #debugger
 from distutils.spawn import find_executable
-import NanoObjectDetection as nd
+import NanoObjectDetection_Mfork as nd
 import shutil
 import os
 from packaging import version

@@ -8,7 +8,7 @@ This module tries to hell the user finding the correct parameters for the analys
 """
 
 
-import NanoObjectDetection as nd
+import NanoObjectDetection_Mfork as nd
 
 import numpy as np # Library for array-manipulation
 import trackpy as tp # trackpy offers all tools needed for the analysis of diffusing particles

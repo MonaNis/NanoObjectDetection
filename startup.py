@@ -5,7 +5,7 @@ Created on Thu Mar 19 09:30:48 2020
 @author: foersterronny
 """
 
-import NanoObjectDetection as nd
+import NanoObjectDetection_Mfork as nd
 import numpy as np
 import trackpy as tp
 import pandas as pd

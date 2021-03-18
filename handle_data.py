@@ -22,7 +22,7 @@ import warnings
 from joblib import Parallel, delayed
 import multiprocessing
 
-import NanoObjectDetection as nd
+import NanoObjectDetection_Mfork as nd
 
 
 def ReadJson(mypath):

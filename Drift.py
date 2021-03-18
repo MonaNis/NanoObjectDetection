@@ -11,7 +11,7 @@ import trackpy as tp # trackpy offers all tools needed for the analysis of diffu
 import sys
 
 
-import NanoObjectDetection as nd
+import NanoObjectDetection_Mfork as nd
 
 
 from pdb import set_trace as bp #debugger

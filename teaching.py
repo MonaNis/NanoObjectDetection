@@ -7,7 +7,7 @@ Created on Mon Mar 30 15:11:51 2020
 
 import numpy as np
 import matplotlib.pyplot as plt
-import NanoObjectDetection as nd
+import NanoObjectDetection_Mfork as nd
 
 def TruthVsResponse(mean, fhwm_truth, sigma_meas, num_particles):
     #how a uniform distributed specimen is measured by a different response function

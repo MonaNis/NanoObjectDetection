@@ -16,7 +16,7 @@ Importing neccessary libraries
 import numpy as np # library for array-manipulation
 from scipy.spatial import cKDTree
 import pandas as pd
-import NanoObjectDetection as nd
+import NanoObjectDetection_Mfork as nd
 
 #import trackpy as tp
 #import matplotlib.pyplot as plt

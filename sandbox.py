@@ -204,7 +204,7 @@ def DiameterOverTrajLengthColored(ParameterJsonFile, sizes_df_lin,
     and color it by a property of choice
     """
         
-    import NanoObjectDetection as nd
+    import NanoObjectDetection_Mfork as nd
 
     settings = nd.handle_data.ReadJson(ParameterJsonFile)
     Histogramm_min_max_auto = settings["Plot"]["Histogramm_min_max_auto"]
@@ -292,7 +292,7 @@ def DiameterPDF_transparent(ParameterJsonFile, sizes_df_lin, histogramm_min = No
     diam_grid
     ax
     """
-    import NanoObjectDetection as nd
+    import NanoObjectDetection_Mfork as nd
     from scipy.stats import norm
     # sns.set(style="dark")
     
