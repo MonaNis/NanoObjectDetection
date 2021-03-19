@@ -44,10 +44,12 @@ def CheckAll(ParameterJsonFile):
     
     SetupLogger(settings, TryLogger = True)
  
+    
 
 def LogWhereEnvIs():
     nd.logger.info("Have a look into the 'PythonEnvironments' Folder in the nd-package.")
  
+    
     
 def CheckPython():
     """ check if the python version is right
@@ -63,6 +65,7 @@ def CheckPython():
         nd.logger.critical("Your python version: %s", python_version)
         LogWhereEnvIs()
         sys.exit("Change your python version accordingly, or insert your python version in python_allowed_versions")
+    
     
 
 def CheckTrackpy():
@@ -84,6 +87,7 @@ def CheckTrackpy():
     CheckNumbda()
          
         
+        
 def CheckPanda():
     """ check if the pandas version is right
     """
@@ -100,6 +104,7 @@ def CheckPanda():
         nd.logger.warning("Try: Downgrading your system in Anaconda promt using >>> conda install pandas=0.23.4 <<<")
         LogWhereEnvIs()
         sys.exit("Change your pandas version accoringly, or insert your pandas version in pd_maximum_versions")       
+
 
 
 def CheckNumbda():
@@ -125,6 +130,7 @@ def CheckLatex():
         nd.logger.warning("Latex not installed for making good figures")
         sys.exit("Latex not installed for making good figures")
         
+
 
 def CheckJson_Exist(ParameterJsonFile):
     """ check if json file exists, otherwise create a default one
@@ -160,6 +166,7 @@ def CheckJson_Exist(ParameterJsonFile):
             nd.logger.error("Abort")
 
     return settings
+
 
 
 def CheckJson_Entries(settings):
@@ -234,6 +241,7 @@ def CheckJson_Entries(settings):
     return settings
 
 
+
 def CheckJson_path(mypath, settings, CreateNew = False):
     """ check if json path is written in file. otherwise put it there
     
@@ -263,6 +271,7 @@ def CheckJson_path(mypath, settings, CreateNew = False):
     return settings
 
     
+
 def CheckJson_specify_default_auto(settings):
     # set default_json file from default folder
     mypath_default = settings["File"]["DefaultParameterJsonFile"]

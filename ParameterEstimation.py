@@ -16,6 +16,8 @@ import trackpy as tp
 import scipy.constants
 import time
 
+
+
 def GaussianKernel(sigma, fac = 6, x_size = None,y_size = None):
     #https://martin-thoma.com/zero-mean-normalized-cross-correlation/
     #https://www.w3resource.com/python-exercises/numpy/python-numpy-exercise-79.php
@@ -60,7 +62,7 @@ def zncc(img1, img2):
     img1, img2:     grayscale images (or any matrices) of the same size
     """
     # Zero Mean Normalized Cross-Correlation
-    # https://martin-thoma.com/zero-mean-normalized-cross-correlation/, 27.07.2020
+    # https://martin-thoma.com/zero-mean-normalized-cross-correlation/ , 27.07.2020
     img1_mean = np.mean(img1)
     img1_std  = np.sqrt(np.mean((img1 - img1_mean)**2))
     
@@ -253,6 +255,7 @@ def FindParticleByZNCC(settings, img_in_zncc, search_area, use_frames):
     return img_zncc, num_particles_zncc, pos_particles
 
 
+
 def AskBestDiameter(QuestionForUser):
     """ ask if user is satisfied
     """
@@ -268,6 +271,7 @@ def AskBestDiameter(QuestionForUser):
             else:
                 UserSatisfied = False
     return UserSatisfied
+
 
 
 def FindParticlesByZNCC(img1, settings, num_verbose = 5):
@@ -300,6 +304,7 @@ def FindParticlesByZNCC(img1, settings, num_verbose = 5):
     pos_particles, num_particles_zncc = FindParticles(img_zncc, correl_min)
 
     return pos_particles, num_particles_zncc, img_zncc
+
 
 
 def CorrelateImgAndPSF(img1, settings, num_verbose = 5):

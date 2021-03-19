@@ -65,6 +65,7 @@ def AdjustSettings_Main(rawframes_super, rawframes_pre, ParameterJsonFile):
     Main(rawframes_super, rawframes_pre, ParameterJsonFile)
 
 
+
 def GetIntegerInput(MessageOnScreen):
     """ ask for an INTEGER input on the console
     """

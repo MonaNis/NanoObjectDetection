@@ -47,12 +47,14 @@ settings = nd.handle_data.ReadJson(ParameterJsonFile)
 
 nd.AdjustSettings.Main(rawframes_super, rawframes_pre, ParameterJsonFile)
    
-""" set 'tp_minmass' to 70% of the automatically found value  """
+""" set 'tp_minmass' to 75% of the automatically found value  """
 #%% check 1 annotated raw frame
 from trackpy import annotate
+
 obj_firstFrame = nd.get_trajectorie.FindSpots(rawframes_pre[0:2,:,:], ParameterJsonFile)
 fig,ax=plt.subplots()
-annotate(obj_firstFrame[obj_firstFrame.frame==0],rawframes_pre[0,:,:])
+annotate(obj_firstFrame[obj_firstFrame.frame==0],rawframes_pre[0,:,:],
+         color='green',imshow_style={'vmin':0,'vmax':300},plot_style={'markersize': 20})
 
 #%% find the objects
 obj_all = nd.get_trajectorie.FindSpots(rawframes_pre, ParameterJsonFile)
@@ -83,6 +85,8 @@ t1_orig = nd.get_trajectorie.link_df(obj_moving, ParameterJsonFile, SearchFixedP
 #%% remove too short trajectories
 t2_long = nd.get_trajectorie.filter_stubs(t1_orig, ParameterJsonFile, FixedParticles = False, BeforeDriftCorrection = True)
    
+tracks_per_frame = nd.particleStats.ParticleCount(t2_long, rawframes_pre.shape[0])
+print(tracks_per_frame.describe())
 
 #%% identify and close gaps in the trajectories
 t3_gapless = nd.get_trajectorie.close_gaps(t2_long)

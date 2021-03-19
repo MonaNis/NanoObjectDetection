@@ -91,7 +91,7 @@ def Main(rawframes_np, ParameterJsonFile):
         # 7 - CLIP NEGATIVE VALUE
         if settings["PreProcessing"]["ClipNegativeValue"] == 1:
             nd.logger.info('Set negative pixel values to 0: staring...')
-            nd.logger.warning("Ronny does not love clipping.")
+            # nd.logger.warning("Ronny does not love clipping.")
             rawframes_np[rawframes_np < 0] = 0
             nd.logger.info('Set negative pixel values to 0: ...finished')
         else:

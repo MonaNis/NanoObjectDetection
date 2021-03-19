@@ -253,7 +253,7 @@ def link_df(obj, ParameterJsonFile, SearchFixedParticles = False, max_displaceme
 
 def filter_stubs(traj_all, ParameterJsonFile, FixedParticles = False,
                  BeforeDriftCorrection = False, min_tracking_frames = None,
-                 ErrorCheck = True, PlotErrorIfTestFails = True):
+                 ErrorCheck = True, PlotErrorIfTestFails = False):
     """ wrapper for tp.filter_stubs, which filters out too short trajectories,
     including a check whether a trajectory is close enough to random Brownian motion
 
@@ -742,7 +742,7 @@ def split_traj_at_high_steps(t2_long, t3_gapless, settings, max_rel_median_inten
     or heavy substructures/intensity holes in the laser mode.
     """
     
-    nd.logger.info("Split particles trajectory at too high intensity jumps.")
+    nd.logger.info("Split trajectory at too high intensity jumps.")
     
     t4_cutted = t3_gapless.copy()
 
@@ -815,10 +815,10 @@ def split_traj_at_high_steps(t2_long, t3_gapless, settings, max_rel_median_inten
     num_stubbed = num_after_split - num_after_stub
 
 
-    nd.logger.info('Number of trajectories: before: %s; after: %s', num_before, num_after_stub)
+    nd.logger.info('Number of trajectories before: %s; after: %s', num_before, num_after_stub)
     
     nd.logger.debug('Number of trajectories (before filter stubs): before: %s; after: %s', num_before, num_after_split)    
-    nd.logger.debug('Number of performed splits: %s', num_splits)    
+    nd.logger.info('Number of performed splits: %s', num_splits)    
     nd.logger.debug('Number of trajectories that became too short and were filtered out: %s', num_stubbed)
 
 
