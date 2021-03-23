@@ -19,7 +19,7 @@ from joblib import Parallel, delayed
 import NanoObjectDetection_Mfork as nd
 import matplotlib.pyplot as plt # Libraries for plotting
 from tqdm import tqdm# progress bar
-# from pdb import set_trace as bp
+from pdb import set_trace as bp
 
 
 def FindSpots(frames_np, ParameterJsonFile, UseLog = False, diameter = None,
@@ -889,21 +889,21 @@ def split_traj_at_long_trajectory(t4_cutted, settings, Min_traj_length = None, M
 
 
     free_particle_id = np.max(t4_cutted["particle"]) + 1
-
+    print('Free particle ID: {}'.format(free_particle_id))
     t4_cutted["true_particle"] = t4_cutted["particle"]
-
+    
     #traj length of each (true) particle
     traj_length = t4_cutted.groupby(["particle"]).frame.max() - t4_cutted.groupby(["particle"]).frame.min()
-
+    
     # split if trajectory is longer than max value
     split_particles = traj_length > Max_traj_length # pd.Series of boolean
-
+    
     particle_list = split_particles.index[split_particles] # index list of particleIDs
-
+    
     particle_list = np.asarray(particle_list.values,dtype='int')
-
-    num_particle_list = len(particle_list)
-
+    
+    num_particle_list = len(particle_list) 
+    
     # loop over all particleIDs
     for count, test_particle in enumerate(particle_list):
         nd.visualize.update_progress("Split too long trajectories", (count+1) / num_particle_list)

@@ -291,7 +291,7 @@ def CheckJson_specify_default_auto(settings):
     
     # set SaveFolder in case of auto     
     if settings["Plot"]["SaveFolder"] == "auto":
-        settings["Plot"]["SaveFolder"] = os.path.dirname(settings["File"]["json"]) + "\\analysis"
+        settings["Plot"]["SaveFolder"] = os.path.dirname(settings["File"]["json"]) #+ "\\analysis"
         
     # check if saving folders are valid    
     my_path = settings["Plot"]["SaveFolder"]

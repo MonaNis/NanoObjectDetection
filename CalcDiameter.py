@@ -45,7 +45,7 @@ def Main2(t6_final, ParameterJsonFile, MSD_fit_Show = False, yEval = False,
     partTotal = len(particle_list_value)
     # LOOP THROUGH ALL THE PARTICLES
     for i,particleid in enumerate(particle_list_value):
-        nd.logger.debug("Particle ID: {:.0f} ({:.0f}/{:.0f})".format(particleid,i,partTotal))
+        nd.logger.info("Particle ID: {:.0f} ({:.0f}/{:.0f})".format(particleid,i,partTotal))
 
         # select trajectory to analyze
         eval_tm = t6_final_use[t6_final_use.particle==particleid]

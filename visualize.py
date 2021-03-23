@@ -395,8 +395,9 @@ def PlotDiameterHistogramm(sizes, binning, histogramm_min = 0, histogramm_max = 
 
     Returns
     -------
-    values_hist : 
     ax : AxesSubplot object
+    values_hist : histogram values
+    positions_hist : histogram positions [nm]
 
     """
     from NanoObjectDetection.PlotProperties import axis_font, title_font
@@ -421,7 +422,7 @@ def PlotDiameterHistogramm(sizes, binning, histogramm_min = 0, histogramm_max = 
  
     ax.set_xlim(histogramm_min, histogramm_max)
 
-    return values_hist, ax
+    return ax, values_hist, positions_hist
 
 
 
@@ -596,19 +597,22 @@ def DiameterHistogramm(ParameterJsonFile, sizes_df_lin, histogramm_min = None,
     xlabel = 'Diameter [nm]'
     ylabel = 'Absolute occurrence'
 
-    values_hist, ax = \
+    ax, values_hist, positions_hist = \
         nd.visualize.PlotDiameterHistogramm(sizes, binning, histogramm_min, 
                                             histogramm_max, title, xlabel, ylabel)
     if showInvHist:
         inv_diams = 1000/sizes # 1/um
-        values_invHist, ax0 = PlotDiameterHistogramm(inv_diams, 40, histogramm_min = inv_diams.min(), 
-                                                     histogramm_max = inv_diams.max(), 
-                                                     xlabel='Inv. diameter [1/$\mu$m]', 
-                                                     ylabel=ylabel, title=title, mycol='C3')
+        ax0, values_invHist, positions_invHist = \
+            PlotDiameterHistogramm(inv_diams, 40, histogramm_min = inv_diams.min(), 
+                                   histogramm_max = inv_diams.max(), 
+                                   xlabel='Inv. diameter [1/$\mu$m]', 
+                                   ylabel=ylabel, title=title, mycol='C3')
         max_invHist = values_invHist.max()
     else:
         ax0 = 'none'
         max_invHist = 1
+        values_invHist = 'none'
+        positions_invHist = 'none'
     
     if (showInfobox==True) and (fitNdist==False):
         nd.visualize.PlotInfobox1N(ax, sizes)
@@ -619,7 +623,10 @@ def DiameterHistogramm(ParameterJsonFile, sizes_df_lin, histogramm_min = None,
         max_hist = values_hist.max()
         
         if fitNdist == False: 
-            nd.logger.info("Show equivalent (reciprocal) Gaussian in the plot.")
+            if fitInvSizes:
+                nd.logger.info("Show equivalent RECIPROCAL Gaussian in the plot.")
+            else:
+                nd.logger.info("Show equivalent Gaussian in the plot.")
             # consider only one contributing particle size
             mean, median, CV = \
                 nd.visualize.PlotReciprGauss1Size(ax, diam_grid, grid_stepsizes, 
@@ -627,7 +634,10 @@ def DiameterHistogramm(ParameterJsonFile, sizes_df_lin, histogramm_min = None,
             nd.logger.info("Parameters: mean={:.2f}, median={:.2f}, CV={:.2f}".format(mean,median,100*CV))
             
         else:
-            nd.logger.info("Model the (inverse) sizes distribution as a mixture of Gaussians.")
+            if fitInvSize:
+                nd.logger.info("Model the INVERSE sizes distribution as a mixture of Gaussians.")
+            else:
+                nd.logger.info("Model the sizes distribution as a mixture of Gaussians.")
             # consider between 1 and num_dist_max contributing particle sizes
             diam_means, CVs, weights, medians = \
                 nd.visualize.PlotReciprGaussNSizes(ax, diam_grid, grid_stepsizes,
@@ -647,7 +657,7 @@ def DiameterHistogramm(ParameterJsonFile, sizes_df_lin, histogramm_min = None,
         
     nd.handle_data.WriteJson(ParameterJsonFile, settings) 
     
-    return ax, ax0
+    return ax, values_hist, positions_hist, ax0, values_invHist, positions_invHist
 
 
 
@@ -941,7 +951,8 @@ def PlotReciprGauss1Size(ax, diam_grid, diam_grid_stepsizes, max_y, sizes, fitIn
         # normalize to integral=1
         prob_diam_1size = prob_diam_1size/sum(prob_diam_1size*diam_grid_stepsizes)
         
-        # mean = 1000/diam_inv_mean # incorrect
+        meanFromInv = 1000/diam_inv_mean # incorrect mean - but probably correct modal value (!?)
+        nd.logger.info("Inversted mean of the inv. distribution (modal value?): {:.2f} nm".format(meanFromInv))
         # mean = sum(prob_diam_1size*diam_grid)*diam_grid_stepsize
         mean = sum(prob_diam_1size*diam_grid*diam_grid_stepsizes)
         median = 1000/diam_inv_median
@@ -1106,13 +1117,16 @@ def PlotInfobox1N(ax, sizes):
     
     diam_inv_mean, diam_inv_std, diam_inv_median, diam_inv_CI68, diam_inv_CI95 = \
         nd.statistics.StatisticOneParticle(sizes)
-    my_median = 1000/diam_inv_median
+    diam_median = 1000/diam_inv_median
     CV = diam_inv_std/diam_inv_mean
+    # values from quantiles
     diam_68 = 1000/diam_inv_CI68[::-1] # invert order
     diam_95 = 1000/diam_inv_CI95[::-1]
-    # my_mean = 1000/diam_inv_mean # MN: This is misleading, I think
-    my_mean = sizes.mean()
-    nd.logger.warning("Instead of the converted mean of the inverse sizes, the mean sizes value is displayed in the infobox.")
+    diam_mean_fromInv = 1000/diam_inv_mean # MN: This is misleading, I think
+    diam_mean = sizes.mean()
+    diam_std = sizes.std()
+    CVdiam = diam_std/diam_mean
+    # nd.logger.warning("Instead of the converted mean of the inverse sizes, the mean sizes value is displayed in the infobox.")
     
 # #   old version (uses the assumption of a Gaussian fct):
 #     diam_68 = [1/(diam_inv_mean + 1*diam_inv_std), 1/(diam_inv_mean - 1*diam_inv_std)]
@@ -1120,9 +1134,9 @@ def PlotInfobox1N(ax, sizes):
 # #    diam_99 = [1/(diam_inv_mean + 3*diam_inv_std), 1/(diam_inv_mean - 3*diam_inv_std)]
     
     textstr = '\n'.join([
-    r'$\mathrm{median}=  %.1f$ nm' % (my_median),
-    # r'$\mu_{\mathrm{inv}} = %.1f$ nm' % (my_mean),
-    r'$\mu = %.1f$ nm, CV$_{\mathrm{inv}}$ = %.3f' % (my_mean, CV),
+    r'$\mathrm{median}=  %.2f$ nm' % (diam_median),
+    r'$\mu_{\mathrm{inv}} = %.2f$ nm, $\mu = %.2f$ nm' % (diam_mean_fromInv, diam_mean),
+    r'CV$_{\mathrm{inv}}$ = %.4f, CV = %.4f' % (CV, CVdiam),
     r'$1 \sigma_{\mathrm{q}} = [%.1f, %.1f]$ nm' %(diam_68[0], diam_68[1]), 
     r'$2 \sigma_{\mathrm{q}} = [%.1f, %.1f]$ nm' %(diam_95[0], diam_95[1]), ])
     
@@ -1130,8 +1144,8 @@ def PlotInfobox1N(ax, sizes):
     
 #    ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14,
 #        , bbox=props)
-    ax.text(0.55, 0.95, textstr, transform=ax.transAxes, 
-            **axis_font, verticalalignment='top', bbox=props)#, va='center')
+    ax.text(0.55, 0.95, textstr, transform=ax.transAxes, #**axis_font, 
+            fontsize=12, verticalalignment='top', bbox=props)#, va='center')
     
 #    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 #    ax.text(0.05, 0.95, title, transform=ax.transAxes, fontsize=14,
