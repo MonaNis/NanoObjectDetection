@@ -951,8 +951,8 @@ def PlotReciprGauss1Size(ax, diam_grid, diam_grid_stepsizes, max_y, sizes, fitIn
         # normalize to integral=1
         prob_diam_1size = prob_diam_1size/sum(prob_diam_1size*diam_grid_stepsizes)
         
-        meanFromInv = 1000/diam_inv_mean # incorrect mean - but probably correct modal value (!?)
-        nd.logger.info("Inversted mean of the inv. distribution (modal value?): {:.2f} nm".format(meanFromInv))
+        meanFromInv = 1000/diam_inv_mean # incorrect mean
+        nd.logger.info("Inversed mean of the inv. distribution: {:.2f} nm".format(meanFromInv))
         # mean = sum(prob_diam_1size*diam_grid)*diam_grid_stepsize
         mean = sum(prob_diam_1size*diam_grid*diam_grid_stepsizes)
         median = 1000/diam_inv_median
@@ -1147,6 +1147,10 @@ def PlotInfobox1N(ax, sizes):
     ax.text(0.55, 0.95, textstr, transform=ax.transAxes, #**axis_font, 
             fontsize=12, verticalalignment='top', bbox=props)#, va='center')
     
+    nd.logger.info("Info-box content [nm]:")
+    nd.logger.info("{},{},{},{},{},{},{},{},{}".format(diam_median,diam_mean_fromInv,CV,
+                                                    diam_mean,CVdiam,diam_68[0],diam_68[1],
+                                                    diam_95[0],diam_95[1]))
 #    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 #    ax.text(0.05, 0.95, title, transform=ax.transAxes, fontsize=14,
 #            verticalalignment='top', bbox=props) 

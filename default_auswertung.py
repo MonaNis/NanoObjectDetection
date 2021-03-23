@@ -123,7 +123,8 @@ sizes_df_lin, any_successful_check = nd.CalcDiameter.Main2(t6_final, ParameterJs
 # sizes_df = pd.read_csv('\\\\mars\\user\\nissenmona\\4 Nanoparticle detection+tracking\\Au_OlympusSetup\\20210208_P100+125mix\\DataAnalysis\\v6_620fps_220usET_longer\\210302\\12_23_32_sizes_df_lin.csv')
 
 #%% visualize results
-nd.visualize.PlotDiameters(ParameterJsonFile, sizes_df_lin, any_successful_check)
+nd.visualize.PlotDiameters(ParameterJsonFile, sizes_df_lin,#[sizes_df_lin['valid frames']>=1000], 
+                           any_successful_check)
 
 #%% further plotting
 Nfmin = 1000
@@ -133,5 +134,9 @@ nd.visualize.DiameterHistogramm(ParameterJsonFile,
                                 showICplot=False,
                                 num_dist_max=2, fitInvSizes=False, showInvHist=False)
 
+#%% colored tracklength plot
+nd.sandbox.DiameterOverTrajLengthColored(ParameterJsonFile, 
+                                         sizes_df_lin[sizes_df_lin['valid frames']>=500],
+                                         use_log=True)
 
 

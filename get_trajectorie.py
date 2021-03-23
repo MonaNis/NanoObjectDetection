@@ -598,9 +598,9 @@ def close_gaps(t1):
         #make list on panas to one big panda
         t1_gapless = pd.concat(output_list)
         
-        # check this later when applied in a data set
-        # index should have no double entries
-        nd.logger.warning("CHECK IF THE INDEXING IS RIGHT IN HERE!")
+        #reset index
+        t1_gapless = t1_gapless.sort_values(["particle", "frame"])
+        t1_gapless = t1_gapless.reset_index(drop = True)
 
 
     # do some plotting for the user
@@ -889,7 +889,6 @@ def split_traj_at_long_trajectory(t4_cutted, settings, Min_traj_length = None, M
 
 
     free_particle_id = np.max(t4_cutted["particle"]) + 1
-    print('Free particle ID: {}'.format(free_particle_id))
     t4_cutted["true_particle"] = t4_cutted["particle"]
     
     #traj length of each (true) particle

@@ -20,8 +20,7 @@ import scipy.constants
 
 def Main2(t6_final, ParameterJsonFile, MSD_fit_Show = False, yEval = False, 
           processOutput = True, t_beforeDrift = None):
-    """
-    Main function to retrieve the diameter ouf of an trajectory
+    """ main function to retrieve the diameter from a trajectory
     """
     
     # read the parameters
@@ -45,7 +44,7 @@ def Main2(t6_final, ParameterJsonFile, MSD_fit_Show = False, yEval = False,
     partTotal = len(particle_list_value)
     # LOOP THROUGH ALL THE PARTICLES
     for i,particleid in enumerate(particle_list_value):
-        nd.logger.info("Particle ID: {:.0f} ({:.0f}/{:.0f})".format(particleid,i,partTotal))
+        nd.logger.info("Process particle with ID {:.0f} ({:.0f}/{:.0f})".format(particleid,i,partTotal))
 
         # select trajectory to analyze
         eval_tm = t6_final_use[t6_final_use.particle==particleid]
@@ -156,8 +155,8 @@ def MSDFitLagtimes(settings, eval_tm, amount_lagtimes_auto = None):
         # special rule for simulated data of very long track lengths
         if settings["Simulation"]["SimulateData"] == 1:
             if traj_length > 10:
-                nd.logger.warning("Ronny is not sure if this satisfies every user!")
-                nd.logger.debug("Use 100 Lagtimes as a starting value, instead of TrajLength/100")
+                nd.logger.info("Use 10 lagtimes as a starting value, instead of TrajLength/100")
+                nd.logger.info("Ronny is not sure if this satisfies every user!")
                 lagtimes_max = 10
         
         nd.logger.debug("Currently considered lagtimes (offset, slope): %s", lagtimes_max)              
@@ -201,8 +200,8 @@ def sizes_df_lin2csv(settings, sizes_df_lin):
 
 
 def OptimizeMSD(eval_tm, settings, yEval, any_successful_check, MSD_fit_Show = None, max_counter = None, lagtimes_min = None, lagtimes_max = None, t_beforeDrift = None):
-    """
-    Calculates the MSD, finds the optimal number of fitting points (iterativly) and fits the MSD-curve
+    """ calculate the MSD, find the optimal number of fitting points (iterativly) 
+    and fit the MSD-curve
     """
         
     if t_beforeDrift is not None:
@@ -224,8 +223,8 @@ def OptimizeMSD(eval_tm, settings, yEval, any_successful_check, MSD_fit_Show = N
     while OptimizingStatus == "Continue":
         """  1 - calculate MSD """
         nan_tm_sq, amount_frames_lagt1, enough_values, traj_length, nan_tm = \
-        CalcMSD(eval_tm, settings, lagtimes_min = lagtimes_min, 
-                lagtimes_max = lagtimes_max, yEval = yEval)
+            CalcMSD(eval_tm, settings, lagtimes_min = lagtimes_min, 
+                    lagtimes_max = lagtimes_max, yEval = yEval)
         
         # just continue if there are enough data points
         if enough_values in ["TooShortTraj", "TooManyHoles"]:
@@ -243,14 +242,17 @@ def OptimizeMSD(eval_tm, settings, yEval, any_successful_check, MSD_fit_Show = N
             if stat_sign < 0.01:
                 OptimizingStatus = "Abort"
             else:    
-                """ Avg each lagtime and fit the MSD Plot """
+                """ avg each lagtime and fit the MSD Plot """
                 # calc MSD and fit linear function through it
                 msd_fit_para, diff_direct_lin, diff_std = \
-                AvgAndFitMSD(nan_tm_sq, settings, lagtimes_min, lagtimes_max, amount_frames_lagt1)
+                    AvgAndFitMSD(nan_tm_sq, settings, lagtimes_min, 
+                                 lagtimes_max, amount_frames_lagt1)
                         
                 # recalculate fitting range p_min
                 if amount_lagtimes_auto == 1:
-                    lagtimes_max, OptimizingStatus = UpdateP_Min(settings, eval_tm, msd_fit_para, diff_direct_lin, amount_frames_lagt1, lagtimes_max)
+                    lagtimes_max, OptimizingStatus = \
+                        UpdateP_Min(settings, eval_tm, msd_fit_para, diff_direct_lin, 
+                                    amount_frames_lagt1, lagtimes_max)
                
         
                 # Check if a new iteration shall be done
@@ -519,6 +521,7 @@ def UpdateP_Min(settings, eval_tm, msd_fit_para, diff_direct_lin, amount_frames_
     return lagtimes_max, OptimizingStatus
 
 
+
 def Estimate_X(settings, slope, offset, t_frame):
     # calculated reduced localication accuracy out of the fitting parameters
     # different modes how to do this
@@ -539,6 +542,7 @@ def Estimate_X(settings, slope, offset, t_frame):
         
         
     return red_x
+
 
 
 def RedXOutOfMsdFit(slope, offset, t_frame):
@@ -936,12 +940,16 @@ def DiffusionToDiameter(diffusion, UseHindranceFac = 0, fibre_diameter_nm = None
 
 
 def EstimateHindranceFactor(diam_direct_lin, fibre_diameter_nm, DoPrint = True):
+    """ correct the diameter from MSD analysis by a hindrance factor 
+    (iteratively estimated)
+    """
     
-    diam_direct_lin_corr = diam_direct_lin
+    diam_direct_lin_corr = diam_direct_lin # starting value
     diam_direct_lin_corr_old = 0
     
     my_iter = 0        
-    while np.abs(diam_direct_lin_corr - diam_direct_lin_corr_old) > 0.1:
+    # iterate until diameter converges
+    while np.abs(diam_direct_lin_corr - diam_direct_lin_corr_old) > 0.1: 
         my_iter = my_iter + 1
         diam_direct_lin_corr_old = diam_direct_lin_corr
         
@@ -1288,15 +1296,13 @@ def hindrance_fac(diam_channel,diam_particle):
 
 
 def local_hindrance_fac(H, my_lambda):
-    """ calculate the hindrance factor for diffusion from particle and channel dimensions
-    according to eq. 16 from "Hindrance Factors for Diffusion and Convection in Pores", 
+    """ cf. "Hindrance Factors for Diffusion and Convection in Pores", 
     Dechadilok and Deen (2006)
     """
     #Eq. 9
     Phi = (1-my_lambda)**2
     Kd = H / Phi
-
-    
+        
     return Kd
     
 
@@ -1311,7 +1317,7 @@ def ContinousIndexingTrajectory(t):
     
     return t
 
-
+# -------
 
 def InvDiameter(sizes_df_lin, settings, useCRLB=True):
     sys.exit("InvDiameter has moved to statistics.py! Please change if you see this")
