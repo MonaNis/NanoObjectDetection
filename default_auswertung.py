@@ -87,6 +87,7 @@ t2_long = nd.get_trajectorie.filter_stubs(t1_orig, ParameterJsonFile, FixedParti
    
 tracks_per_frame = nd.particleStats.ParticleCount(t2_long, rawframes_pre.shape[0])
 print(tracks_per_frame.describe())
+print('Total number of tracks: {}'.format(t2_long.particle.nunique()))
 
 #%% identify and close gaps in the trajectories
 t3_gapless = nd.get_trajectorie.close_gaps(t2_long)
@@ -105,7 +106,7 @@ t5_no_drift = nd.Drift.Main(t4_cutted, ParameterJsonFile, PlotGlobalDrift = True
 
 
 #%% only long trajectories are used in the MSD plot in order to get a good fit
-t6_final = nd.get_trajectorie.filter_stubs(t4_cutted, ParameterJsonFile, FixedParticles = False, BeforeDriftCorrection = False, PlotErrorIfTestFails = False)
+t6_final = nd.get_trajectorie.filter_stubs(t4_cutted, ParameterJsonFile, FixedParticles = False, BeforeDriftCorrection = False, PlotErrorIfTestFails = False, ErrorCheck = False)
 
 # #%% export/import t6_final
 # t6_final.to_csv('\\\\mars\\user\\nissenmona\\4 Nanoparticle detection+tracking\\Au_OlympusSetup\\20210208_P100+125mix\\DataAnalysis\\v6_620fps_220usET_longer\\t6_final.csv',sep='\t',decimal=',')
@@ -130,7 +131,7 @@ nd.visualize.PlotDiameters(ParameterJsonFile, sizes_df_lin,#[sizes_df_lin['valid
 Nfmin = 1000
 nd.visualize.DiameterHistogramm(ParameterJsonFile,
                                 sizes_df_lin[sizes_df_lin['valid frames']>=Nfmin],
-                                weighting=True, showInfobox=True, fitNdist=True,
+                                weighting=True, showInfobox=True, fitNdist=False,
                                 showICplot=False,
                                 num_dist_max=2, fitInvSizes=False, showInvHist=False)
 

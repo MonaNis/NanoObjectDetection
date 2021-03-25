@@ -42,9 +42,10 @@ def Main2(t6_final, ParameterJsonFile, MSD_fit_Show = False, yEval = False,
     any_successful_check = False
 
     partTotal = len(particle_list_value)
+    nd.logger.info('Number of tracks to process: {}'.format(partTotal))
     # LOOP THROUGH ALL THE PARTICLES
     for i,particleid in enumerate(particle_list_value):
-        nd.logger.info("Process particle with ID {:.0f} ({:.0f}/{:.0f})".format(particleid,i,partTotal))
+        nd.logger.debug("Process particle with ID {:.0f} ({:.0f}/{:.0f})".format(particleid,i,partTotal))
 
         # select trajectory to analyze
         eval_tm = t6_final_use[t6_final_use.particle==particleid]
@@ -241,6 +242,7 @@ def OptimizeMSD(eval_tm, settings, yEval, any_successful_check, MSD_fit_Show = N
             # only continue of trajectory shows brownian (gaussian) motion
             if stat_sign < 0.01:
                 OptimizingStatus = "Abort"
+                nd.logger.warning('KS test failed')
             else:    
                 """ avg each lagtime and fit the MSD Plot """
                 # calc MSD and fit linear function through it
@@ -375,10 +377,12 @@ def CreateNewMSDPlot(any_successful_check, settings):
     return any_successful_check
 
 
+
 def CheckIfTrajectoryHasError(nan_tm, traj_length, MinSignificance = 0.1, PlotErrorIfTestFails = False, PlotAlways = False, ID='unknown', processOutput = False):
     nd.logger.error("Function name is old. Use KolmogorowSmirnowTest instead")
     
     return KolmogorowSmirnowTest(nan_tm, traj_length, MinSignificance = 0.1, PlotErrorIfTestFails = False, PlotAlways = False, ID='unknown', processOutput = False)
+
 
 
 def  KolmogorowSmirnowTest(nan_tm, traj_length, MinSignificance = 0.1, PlotErrorIfTestFails = False, PlotAlways = False, ID='unknown', processOutput = False):

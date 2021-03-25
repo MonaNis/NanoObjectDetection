@@ -605,7 +605,7 @@ def DiameterHistogramm(ParameterJsonFile, sizes_df_lin, histogramm_min = None,
         ax0, values_invHist, positions_invHist = \
             PlotDiameterHistogramm(inv_diams, 40, histogramm_min = inv_diams.min(), 
                                    histogramm_max = inv_diams.max(), 
-                                   xlabel='Inv. diameter [1/$\mu$m]', 
+                                   xlabel=r'Inv. diameter [1/$\mu$m]', 
                                    ylabel=ylabel, title=title, mycol='C3')
         max_invHist = values_invHist.max()
     else:
@@ -634,7 +634,7 @@ def DiameterHistogramm(ParameterJsonFile, sizes_df_lin, histogramm_min = None,
             nd.logger.info("Parameters: mean={:.2f}, median={:.2f}, CV={:.2f}".format(mean,median,100*CV))
             
         else:
-            if fitInvSize:
+            if fitInvSizes:
                 nd.logger.info("Model the INVERSE sizes distribution as a mixture of Gaussians.")
             else:
                 nd.logger.info("Model the sizes distribution as a mixture of Gaussians.")
@@ -745,7 +745,7 @@ def PlotDiameterPDF(ParameterJsonFile, sizes_df_lin, plotInSizesSpace=True,
     else:
         mycolor = 'C3'
         prefix = 'Inv. d'
-        unit = '1/$\mu$m'
+        unit = r'1/$\mu$m'
         
         mean, median, CI68, CI95 = i_mean, i_median, i_CI68, i_CI95
         PDF, grid, grid_stepsizes = PDF_i, i_grid, i_grid_stepsizes
@@ -785,7 +785,7 @@ def PlotDiameterPDF(ParameterJsonFile, sizes_df_lin, plotInSizesSpace=True,
         
         if nComponentsFit == 1: # consider only one contributing particle size   
         
-            if not(plotInSizesSpace) and not(fitInInverseSpace):
+            if not(plotInSizesSpace) and not(fitInInvSpace):
                 nd.logger.warning("Fitting a distribution in sizes space and plotting it in the inversed is not implemented.")
                 nd.logger.info("No fit was computed.")
             else:
@@ -938,7 +938,7 @@ def PlotReciprGauss1Size(ax, diam_grid, diam_grid_stepsizes, max_y, sizes, fitIn
         mycolor = 'C3'
         
         diam_inv_mean, diam_inv_std, diam_inv_median, diam_inv_CI68, diam_inv_CI95 = \
-            nd.statistics.StatisticOneParticle(sizes)
+            nd.statistics.StatisticInvMonoDistribution(sizes)
             
         diam_grid_inv = 1000/diam_grid # 1/um
         
@@ -1029,7 +1029,7 @@ def PlotReciprGaussNSizes(ax, diam_grid, grid_stepsizes, max_y, sizes, fitInvSiz
             
             axInv.plot(grid,dist.transpose(),ls='--')
             axInv.plot(grid,dist.sum(axis=0),color='k')
-            PlotInfoboxMN(axInv, means, CVs, weights, means, unit='1/$\mu$m', resInt='')
+            PlotInfoboxMN(axInv, means, CVs, weights, means, unit=r'1/$\mu$m', resInt='')
         
         # convert the individual PDFs back to sizes space
         pdfs = []
@@ -1115,30 +1115,21 @@ def PlotInfobox1N(ax, sizes):
     """
     from NanoObjectDetection.PlotProperties import axis_font
     
-    diam_inv_mean, diam_inv_std, diam_inv_median, diam_inv_CI68, diam_inv_CI95 = \
-        nd.statistics.StatisticOneParticle(sizes)
-    diam_median = 1000/diam_inv_median
-    CV = diam_inv_std/diam_inv_mean
-    # values from quantiles
-    diam_68 = 1000/diam_inv_CI68[::-1] # invert order
-    diam_95 = 1000/diam_inv_CI95[::-1]
-    diam_mean_fromInv = 1000/diam_inv_mean # MN: This is misleading, I think
-    diam_mean = sizes.mean()
-    diam_std = sizes.std()
-    CVdiam = diam_std/diam_mean
-    # nd.logger.warning("Instead of the converted mean of the inverse sizes, the mean sizes value is displayed in the infobox.")
-    
+    # use quantiles for getting CI intervals
+    stats = nd.statistics.StatisticMonoDistribution(sizes)
+    mean_inv, CV_inv, mean, CV, median, CI68, CI95 = stats
+        
 # #   old version (uses the assumption of a Gaussian fct):
 #     diam_68 = [1/(diam_inv_mean + 1*diam_inv_std), 1/(diam_inv_mean - 1*diam_inv_std)]
 #     diam_95 = [1/(diam_inv_mean + 2*diam_inv_std), 1/(diam_inv_mean - 2*diam_inv_std)]
 # #    diam_99 = [1/(diam_inv_mean + 3*diam_inv_std), 1/(diam_inv_mean - 3*diam_inv_std)]
     
     textstr = '\n'.join([
-    r'$\mathrm{median}=  %.2f$ nm' % (diam_median),
-    r'$\mu_{\mathrm{inv}} = %.2f$ nm, $\mu = %.2f$ nm' % (diam_mean_fromInv, diam_mean),
-    r'CV$_{\mathrm{inv}}$ = %.4f, CV = %.4f' % (CV, CVdiam),
-    r'$1 \sigma_{\mathrm{q}} = [%.1f, %.1f]$ nm' %(diam_68[0], diam_68[1]), 
-    r'$2 \sigma_{\mathrm{q}} = [%.1f, %.1f]$ nm' %(diam_95[0], diam_95[1]), ])
+    r'$\mathrm{median}=  %.2f$ nm' % (median),
+    r'$\mu_{\mathrm{inv}} = %.2f$ nm, $\mu = %.2f$ nm' % (mean_inv, mean),
+    r'CV$_{\mathrm{inv}}$ = %.4f, CV = %.4f' % (CV_inv, CV),
+    r'$1 \sigma_{\mathrm{q}} = [%.1f, %.1f]$ nm' %(CI68[0], CI68[1]), 
+    r'$2 \sigma_{\mathrm{q}} = [%.1f, %.1f]$ nm' %(CI95[0], CI95[1]) ])
     
     props = dict(boxstyle='round', facecolor='honeydew', alpha=0.7)
     
@@ -1148,9 +1139,10 @@ def PlotInfobox1N(ax, sizes):
             fontsize=12, verticalalignment='top', bbox=props)#, va='center')
     
     nd.logger.info("Info-box content [nm]:")
-    nd.logger.info("{},{},{},{},{},{},{},{},{}".format(diam_median,diam_mean_fromInv,CV,
-                                                    diam_mean,CVdiam,diam_68[0],diam_68[1],
-                                                    diam_95[0],diam_95[1]))
+    nd.logger.info("{},{},{},{},{},{},{},{},{}".format(median,mean_inv,CV_inv,
+                                                       mean,CV,CI68[0],CI68[1],
+                                                       CI95[0],CI95[1]) )
+    
 #    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 #    ax.text(0.05, 0.95, title, transform=ax.transAxes, fontsize=14,
 #            verticalalignment='top', bbox=props) 

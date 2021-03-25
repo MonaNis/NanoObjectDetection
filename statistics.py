@@ -124,9 +124,9 @@ def InvDiameter(sizes_df_lin, settings, useCRLB=True):
 
 
 
-def StatisticOneParticle(sizes):
-    """ calculate the inverse statistical quantities of a particle diameter ensemble,
-    assuming only one contributing size
+def StatisticInvMonoDistribution(sizes):
+    """ calculate the INVERSE statistical quantities of a particle diameter ensemble,
+    assuming only one contributing size, all in units of 1/um
     
     NOTE:
     mean diameter is ~1/(mean diffusion) not mean of all diameter values (!)
@@ -156,6 +156,42 @@ def StatisticOneParticle(sizes):
     diam_inv_CI95 = np.array([np.quantile(inv_sizes,0.5-s2/2), np.quantile(inv_sizes,0.5+s2/2)])
     
     return diam_inv_mean, diam_inv_std, diam_inv_median, diam_inv_CI68, diam_inv_CI95
+
+
+
+def StatisticMonoDistribution(sizes):
+    """ calculate statistical quantities of a particle diameter ensemble,
+    assuming only one contributing size, all in units of the diameter
+
+    Parameters
+    ----------
+    sizes : pandas.DataFrame with 'diameter' column 
+            OR pandas.Series of float 
+            OR np.array of float
+        particle diameters
+        
+    Returns
+    -------
+    mean_inv, CV_inv, mean, CV, median, CI68, CI95 : (tuple of) float
+    """
+    if type(sizes) is pd.DataFrame:
+        sizes = sizes.diameter
+    
+    diam_inv_mean, diam_inv_std, diam_inv_median, diam_inv_CI68, diam_inv_CI95 = \
+        nd.statistics.StatisticInvMonoDistribution(sizes)
+    median = 1000/diam_inv_median
+    CV_inv = diam_inv_std/diam_inv_mean
+    
+    # values from quantiles (!)
+    CI68 = 1000/diam_inv_CI68[::-1] # invert order
+    CI95 = 1000/diam_inv_CI95[::-1]
+    mean_inv = 1000/diam_inv_mean # MN: This is misleading, I think
+    mean = sizes.mean()
+    diam_std = sizes.std()
+    CV = diam_std/mean
+    
+    # return diam_mean, diam_std, diam_inv_mean, diam_inv_std, diam_inv_median, diam_inv_CI68, diam_inv_CI95
+    return (mean_inv, CV_inv, mean, CV, median, CI68, CI95)
     
     
 
@@ -170,7 +206,7 @@ def StatisticDistribution(sizesInv, num_dist_max=10, showICplot=False, useAIC=Fa
     distribution parameters.
 
     NOTE: 
-        Unlike in the "StatisticOneParticle" function, here the distribution 
+        Unlike in the "StatisticMonoDistribution" function, here the distribution 
         parameters are NOT computed for the inverse diameters. 
     
     Parameters
