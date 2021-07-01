@@ -357,15 +357,17 @@ def DiameterHistogrammTime(ParameterJsonFile, sizes_df_lin, show_plot = None, sa
     Histogramm_Show = settings["Plot"]['Histogramm_time_Show']
     Histogramm_Save = settings["Plot"]['Histogramm_time_Save']
     
-    if settings["Plot"]["Histogramm_Bins_Auto"] == 1:
-        settings["Plot"]["Histogramm_Bins"] = NumberOfBinsAuto(sizes_df_lin)
-    binning = settings["Plot"]["Histogramm_Bins"]
+    if binning==None:
+        if settings["Plot"]["Histogramm_Bins_Auto"] == 1:
+            settings["Plot"]["Histogramm_Bins"] = NumberOfBinsAuto(sizes_df_lin)
+        binning = settings["Plot"]["Histogramm_Bins"]
     
-    Histogramm_min_max_auto = settings["Plot"]["Histogramm_min_max_auto"]
-    if Histogramm_min_max_auto == 1:
-
-        histogramm_min = np.round(np.min(sizes_df_lin.diameter) - 5, -1)
-        histogramm_max = np.round(np.max(sizes_df_lin.diameter) + 5, -1)
+    if (histogramm_min==None or histogramm_max==None):
+        Histogramm_min_max_auto = settings["Plot"]["Histogramm_min_max_auto"]
+        if Histogramm_min_max_auto == 1:
+    
+            histogramm_min = np.round(np.min(sizes_df_lin.diameter) - 5, -1)
+            histogramm_max = np.round(np.max(sizes_df_lin.diameter) + 5, -1)
         
     histogramm_min, settings = nd.handle_data.SpecificValueOrSettings(histogramm_min, settings, "Plot", "Histogramm_min")
     histogramm_max, settings = nd.handle_data.SpecificValueOrSettings(histogramm_max, settings, "Plot", "Histogramm_max")
@@ -436,6 +438,22 @@ def PlotDiameter2DHistogramm(sizes_df_lin, binning, histogramm_min = 0, histogra
         - a 'particles analyzed per frame' plot on the right
     """
     sns.set(style="darkgrid")
+    params = {
+       'xtick.labelsize': 12,
+       'ytick.labelsize': 12,
+       # 'xtick.direction': 'in',
+       # 'xtick.bottom': True,
+       # 'xtick.top': True,
+       # 'ytick.direction': 'in',
+       # 'ytick.right': True,
+       # 'ytick.left': True,
+       'font.size': 12,
+       'axes.spines.right': True,
+       'axes.spines.left': True,
+       'axes.spines.top': True,
+       'axes.spines.bottom': True,
+    }
+    plt.style.use(params)
     
     time_points = int(sizes_df_lin["traj length"].sum()) # ... for all trajectories
     plot_data = np.zeros([time_points,2]) # create result matrix
@@ -476,8 +494,8 @@ def PlotDiameter2DHistogramm(sizes_df_lin, binning, histogramm_min = 0, histogra
     time = plot_data[:,0] # y: frame numbers where analyzed particles appear
     
     # define plot limits and properties
-    lim_diam_start = np.min(diam)
-    lim_diam_end = np.max(diam)
+    lim_diam_start = histogramm_min #np.min(diam)
+    lim_diam_end = histogramm_max # np.max(diam)
     lim_time_start = np.min(time)
     lim_time_end = np.max(time)+1
     
@@ -501,7 +519,7 @@ def PlotDiameter2DHistogramm(sizes_df_lin, binning, histogramm_min = 0, histogra
     rect_histy = [left_h, bottom, 0.2, height]
     
     # start with a quadratic Figure
-    plt.figure(figsize=(8, 8))
+    plt.figure(figsize=(6, 6))
     # define specific axis handles for the 3 image sections
     axScatter = plt.axes(rect_scatter)
     axHistx = plt.axes(rect_histx)
@@ -512,7 +530,7 @@ def PlotDiameter2DHistogramm(sizes_df_lin, binning, histogramm_min = 0, histogra
     axHisty.yaxis.set_major_formatter(nullfmt)
     
     # plot the 2D histogram/'scatter plot' into the major image section
-    axScatter.hist2d(diam, time, bins = [diam_bins, time_bins], cmap = "jet")
+    axScatter.hist2d(diam, time, bins = [diam_bins, time_bins], cmap = "viridis")
     axScatter.set_xlabel("Diameter [nm]")
     axScatter.set_ylabel("Time [frames]")
     axScatter.set_xlim((lim_diam_start, lim_diam_end))
@@ -521,7 +539,9 @@ def PlotDiameter2DHistogramm(sizes_df_lin, binning, histogramm_min = 0, histogra
     # plot the 1D histograms alongside into the minor image sections (top+right)
     axHistx.hist(diam, bins=diam_bins)
     axHistx.set_ylabel("Occurrence [counts]")
-    time_hist = axHisty.hist(time, bins=time_bins, orientation='horizontal')
+    # time_hist = 
+    axHisty.hist(time, bins=time_bins, orientation='horizontal',
+                             histtype='step')
     axHisty.set_xlabel("Analyzed particles")
     axHistx.set_xlim(axScatter.get_xlim())
     axHisty.set_ylim(axScatter.get_ylim())
@@ -979,8 +999,8 @@ def PlotReciprGauss1Size(ax, diam_grid, diam_grid_stepsizes, max_y, sizes, fitIn
     
     
 def PlotReciprGaussNSizes(ax, diam_grid, grid_stepsizes, max_y, sizes, fitInvSizes,
-                          num_dist_max=2, useAIC=False, showICplot=False, axInv='none', 
-                          max_hist_inv=1, showInvHist=False):
+                          num_dist_max=2, useAIC=True, showICplot=False, axInv='none', 
+                          max_hist_inv=1, showInvHist=False,clr='k'):
     """ plot the (reciprocal) fcts of Gaussian fits on top of a histogram
         
     diam_grid : np.ndarray; plotting grid [nm]
@@ -1062,8 +1082,8 @@ def PlotReciprGaussNSizes(ax, diam_grid, grid_stepsizes, max_y, sizes, fitInvSiz
     dsum = normFactor * dsum
     dist = normFactor * dist # ... and the individual distributions accordingly
     
-    ax.plot(grid,dist.transpose(),ls='--')
-    ax.plot(grid,dist.sum(axis=0),color='k')
+    ax.plot(grid,dist.transpose(),ls='--',color=clr)
+    ax.plot(grid,dist.sum(axis=0),color=clr)
     
     # sort the parameters from lowest to highest mean value
     sortedIndices = means.argsort()#[::-1]
@@ -1073,7 +1093,7 @@ def PlotReciprGaussNSizes(ax, diam_grid, grid_stepsizes, max_y, sizes, fitInvSiz
     CVs = CVs[sortedIndices]
     weights = weights[sortedIndices]
     
-    return means, CVs, weights, medians
+    return means, CVs, weights, medians, dist
 
 
 
@@ -1157,7 +1177,7 @@ def PlotInfoboxMN(ax, means, CVs, weights, medians, unit='nm', resInt=''):
     mtext = ''
     stext = ''
     wtext = ''
-    for med,m,CV,w in zip(medians,means,CVs,weights):
+    for c,(med,m,CV,w) in enumerate(zip(medians,means,CVs,weights)):
         medtxt += '{:.1f}, '.format(med)
         mtext += '{:.1f}, '.format(m)
         # try:
@@ -1168,6 +1188,8 @@ def PlotInfoboxMN(ax, means, CVs, weights, medians, unit='nm', resInt=''):
         #     sname = '$\sigma$'
         stext += '{:.1f}, '.format(100*CV)
         wtext += '{:.1f}, '.format(100*w) # [%]
+        nd.logger.info("Info-box contribution {}:".format(c+1))
+        nd.logger.info("{},{},{},{}".format(w,med,m,CV))
     
     textstr = '\n'.join([
         r'median = ['+medtxt[:-2]+'] '+unit,
@@ -1519,14 +1541,15 @@ def DriftCorrectedTraj(tm_sub):
     
     
 def PlotGlobalDrift(d,settings,save=True):
-    my_font = 18
-    plt.figure(figsize=(6,6))
-    plt.plot(d)
-    plt.title("accumulated drift", fontsize = my_font+2)
-    plt.xlabel("frames", fontsize = my_font)
-    plt.ylabel("drift [px]", fontsize = my_font)
-    plt.legend(("transversal","along fiber"), fontsize = my_font-2)
-    
+    # my_font = 18
+    fig,ax = plt.subplots(figsize=(6,6/1.61))
+    ax.plot(d)
+    # plt.title("Accumulated drift")#, fontsize = my_font+2)
+    ax.set_xlabel("Frame number")#, fontsize = my_font)
+    ax.set_xlim([0,len(d)])
+    ax.set_ylabel("Accumulated drift [px]")#, fontsize = my_font)
+    ax.legend(("transversal","along fiber"))#, fontsize = my_font-2)
+    fig.tight_layout()
     if save==True:
         save_folder_name = settings["Plot"]["SaveFolder"]
         settings = nd.visualize.export(save_folder_name, "Global_Drift", settings)

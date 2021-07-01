@@ -41,7 +41,7 @@ def Dilution(d_channel, d_goal, mode = "c_stock", c_stock = None):
 
 
 
-def GetViscosity(temperature = 295.15, solvent = "water"):
+def GetViscosity(temperature = 295.15, solvent = "water",output=True):
     """ import viscosity value from CoolProp data base or ask for user input   
 
     Parameters
@@ -61,7 +61,8 @@ def GetViscosity(temperature = 295.15, solvent = "water"):
         import CoolProp as CP
         
         my_visc = CP.CoolProp.PropsSI('V','T',temperature,'P',101325,solvent)
-        print(r"CoolProp (http://www.coolprop.org/) returns a viscosity of {:.3e} Ns/m^2.".format(my_visc))
+        if output:
+            print(r"CoolProp (http://www.coolprop.org/) returns a viscosity of {:.3e} Ns/m^2.".format(my_visc))
         # convert from Ns/m^2 (=Pa*s) to Ns/um^2
         my_visc = my_visc * 1e-12
         

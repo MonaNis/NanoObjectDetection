@@ -33,16 +33,16 @@ def Main2(t6_final, ParameterJsonFile, MSD_fit_Show = False, yEval = False,
     # list of particles id
     particle_list_value = list(t6_final_use.particle.drop_duplicates())
 
-    #setup return variable
+    # set up return variable
     sizes_df_lin=pd.DataFrame(columns={'diameter','particle'})       
     
     # nd.logger.warning("Variable sizes_df_lin_rolling is not longer calculated. That might be inserted later again. If you have this return variable in your CalcDiameter.Main2 function that will cause an error.")
         
-    #boolean for plotting stuff
-    any_successful_check = False
+    any_successful_check = False # boolean for plotting stuff
 
     partTotal = len(particle_list_value)
     nd.logger.info('Number of tracks to process: {}'.format(partTotal))
+    
     # LOOP THROUGH ALL THE PARTICLES
     for i,particleid in enumerate(particle_list_value):
         nd.logger.debug("Process particle with ID {:.0f} ({:.0f}/{:.0f})".format(particleid,i,partTotal))
@@ -156,11 +156,10 @@ def MSDFitLagtimes(settings, eval_tm, amount_lagtimes_auto = None):
         # special rule for simulated data of very long track lengths
         if settings["Simulation"]["SimulateData"] == 1:
             if traj_length > 10:
-                nd.logger.info("Use 10 lagtimes as a starting value, instead of TrajLength/100")
-                nd.logger.info("Ronny is not sure if this satisfies every user!")
+                # nd.logger.info("Use 10 lagtimes as a starting value, instead of TrajLength/100")
+                # nd.logger.info("Ronny is not sure if this satisfies every user!")
                 lagtimes_max = 10
         
-        nd.logger.debug("Currently considered lagtimes (offset, slope): %s", lagtimes_max)              
     else:
         max_counter = 1
         lagtimes_min = settings["MSD"]["lagtimes_min"]
@@ -168,6 +167,7 @@ def MSDFitLagtimes(settings, eval_tm, amount_lagtimes_auto = None):
 
     # lagtimes max is different for offset and slope
     lagtimes_max = [lagtimes_max, lagtimes_max]
+    nd.logger.debug("Currently considered lagtimes (offset, slope): %s", lagtimes_max)
 
     return lagtimes_min, lagtimes_max, max_counter
 
@@ -201,7 +201,7 @@ def sizes_df_lin2csv(settings, sizes_df_lin):
 
 
 def OptimizeMSD(eval_tm, settings, yEval, any_successful_check, MSD_fit_Show = None, max_counter = None, lagtimes_min = None, lagtimes_max = None, t_beforeDrift = None):
-    """ calculate the MSD, find the optimal number of fitting points (iterativly) 
+    """ calculate the MSD, find the optimal number of fitting points (iteratively) 
     and fit the MSD-curve
     """
         
@@ -239,12 +239,12 @@ def OptimizeMSD(eval_tm, settings, yEval, any_successful_check, MSD_fit_Show = N
             # check if datapoints in first lagtime are normal distributed
                 _, stat_sign, _ = KolmogorowSmirnowTest(nan_tm, traj_length)
                 
-            # only continue of trajectory shows brownian (gaussian) motion
+            # only continue if trajectory shows brownian (gaussian) motion
             if stat_sign < 0.01:
                 OptimizingStatus = "Abort"
                 nd.logger.warning('KS test failed')
             else:    
-                """ avg each lagtime and fit the MSD Plot """
+                """ avg each lagtime and fit the MSD plot """
                 # calc MSD and fit linear function through it
                 msd_fit_para, diff_direct_lin, diff_std = \
                     AvgAndFitMSD(nan_tm_sq, settings, lagtimes_min, 
@@ -267,13 +267,14 @@ def OptimizeMSD(eval_tm, settings, yEval, any_successful_check, MSD_fit_Show = N
                     OptimizingStatus = "Abort"
 
 
-    # save all the results of the particle into a pandas
-    sizes_df_particle=pd.DataFrame(columns={'diameter','particle'})  
+    # save all the results of the particle into a pd.DataFrame
+    sizes_df_particle = pd.DataFrame(columns={'diameter','particle'})  
     
     if OptimizingStatus == "Successful":
         # open a window to plot for the MSD if not open yet
         any_successful_check = CreateNewMSDPlot(any_successful_check, settings)
                 
+        # convert diffusion coeff. to diameter and summarize results to df
         sizes_df_particle = ConcludeResultsMain(settings, eval_tm, sizes_df_particle, diff_direct_lin, traj_length, lagtimes_max, amount_frames_lagt1, stat_sign, msd_fit_para, DoRolling = False, t_beforeDrift = t_beforeDrift)
     
     
@@ -302,7 +303,7 @@ def GetVisc(settings):
         visc_auto = settings["Exp"]["Viscocity_auto"]          
     
     if visc_auto == 1:
-        settings["Exp"]["Viscosity"] = nd.handle_data.GetViscosity(temperature = temp_water, solvent = solvent)
+        settings["Exp"]["Viscosity"] = nd.Experiment.GetViscosity(temperature = temp_water, solvent = solvent)
     
     #required since Viscosity has old typo
     try:
@@ -449,7 +450,7 @@ def UpdateP_Min(settings, eval_tm, msd_fit_para, diff_direct_lin, amount_frames_
     
     L_b = 0.8 + 0.564 * amount_frames_lagt1
 
-    # change maximal lagtime if slope or offset is negativ (Michalet2012)
+    # change maximal lagtime if slope is negativ (Michalet2012)
     if msd_fit_para[0] < 0:
         # negative slope
         lagtimes_max = np.array([L_a, L_b], dtype = 'int')
@@ -550,10 +551,10 @@ def Estimate_X(settings, slope, offset, t_frame):
 
 
 def RedXOutOfMsdFit(slope, offset, t_frame):
-    # calculated reduced localication accuracy out of the fitting parameters
-    
+    """ calculate the reduced localization error from the fit parameters
+    since it can be identified as "the offset of the normalized MSD curve" (Michalet2012)
+    """
     # Michalet 2012 using Eq 4 in offset of Eq 10
-    
     red_x = offset / (t_frame*slope)
     
     # do not allow theoretical unallowed x
@@ -564,7 +565,6 @@ def RedXOutOfMsdFit(slope, offset, t_frame):
     return red_x
 
 
-
  
 def GetLimitOfPlottedLineData(ax):
     
@@ -573,7 +573,6 @@ def GetLimitOfPlottedLineData(ax):
 
     y_min = np.inf
     y_max = -np.inf
-    
     
     for counter, ax_line in enumerate(ax.lines):
          x_min_test = np.min(ax_line.get_xdata())
@@ -615,8 +614,8 @@ def AvgAndFitMSD(nan_tm_sq, settings, lagtimes_min, lagtimes_max, amount_frames_
     # fit a linear function through it
     msd_fit_para, diff_direct_lin, diff_std = \
     FitMSDRolling(lagt_direct, amount_frames_lagt1, mean_displ_direct, 
-                  mean_displ_sigma_direct, PlotMsdOverLagtime = MSD_fit_Show, DoRolling = False)                    
-
+                  mean_displ_sigma_direct, PlotMsdOverLagtime = MSD_fit_Show, DoRolling = False)
+    
     return msd_fit_para, diff_direct_lin, diff_std
 
 
@@ -651,7 +650,7 @@ def CalcMSD(eval_tm, settings = None, microns_per_pixel = 1, amount_summands = 5
         microns_per_pixel = settings["Exp"]["Microns_per_pixel"]
         
         if settings["MSD"]["Amount lagtimes auto"] == 1:
-            amount_summands = 0                                  # MN: does this make sense??
+            amount_summands = 0
         else:
             amount_summands = settings["MSD"]["Amount summands"]
    
@@ -701,9 +700,9 @@ def CalcMSD(eval_tm, settings = None, microns_per_pixel = 1, amount_summands = 5
         
         """"""
         # count the number of valid frames (i.e. != nan)
-        amount_frames_lagt1 = nan_tm[0].count()                     # MN: shouldn't this be nan_tm[1] ?
+        amount_frames_lagt1 = nan_tm[0].count() # MN: shouldn't this be nan_tm[1] ?
         amount_frames_lagt_max = nan_tm[max_lagtimes_max].count() 
-
+        
         # check if too many holes are in the trajectory
         # i.e. not enough statistically independent data present
         if amount_frames_lagt_max < (max_lagtimes_max *(1+amount_summands) + 1):
@@ -775,7 +774,7 @@ def AvgMsdRolling(nan_tm_sq, frames_per_second, my_rolling = 100, DoRolling = Fa
 
             nan_indi_means = rolling_with_step(nan_tm_sq[eval_column], eval_column, eval_column, mean_func)
             
-            # 2. Calculate mean of squared displacement values for the sublocks
+            # 2. Calculate mean of squared displacement values for the subblocks
             mean_displ_direct[column] = nan_indi_means.mean(axis=0)
 #            mean_displ_direct[column] = nan_indi_means.median(axis=0)
             
@@ -797,7 +796,6 @@ def AvgMsdRolling(nan_tm_sq, frames_per_second, my_rolling = 100, DoRolling = Fa
             mean_displ_variance_direct_loop = nan_indi_means.var(axis=0) / (len_nan_tm_sq_loop-1)
             
             mean_displ_variance_direct[column] = mean_displ_variance_direct_loop
-
 
     else:   
         bp()
@@ -915,8 +913,9 @@ def DiffusionToDiameter(diffusion, UseHindranceFac = 0, fibre_diameter_nm = None
     """
     const_Boltz = scipy.constants.Boltzmann 
     
-    diameter = (2*const_Boltz*temp_water/(6*math.pi *visc_water)*1e9) /diffusion # diameter of each particle
-
+    # hydr. diameter of individual particle
+    diameter = (2*const_Boltz*temp_water/(6*math.pi *visc_water)*1e9) /diffusion 
+    
     if UseHindranceFac == True:
         if diameter < fibre_diameter_nm:
             if DoRolling == False:
@@ -984,7 +983,7 @@ def EstimateHindranceFactor(diam_direct_lin, fibre_diameter_nm, DoPrint = True):
 
 
 def ConcludeResultsMain(settings, eval_tm, sizes_df_lin, diff_direct_lin, traj_length, lagtimes_max, amount_frames_lagt1, stat_sign, msd_fit_para, DoRolling = False, t_beforeDrift=None):
-    """ organize the results and write them in one large pandas.DataFrame
+    """ convert diffusion coefficient values to diameters, organize the results and write them in one large pandas.DataFrame
     """
     
     mean_raw_mass = eval_tm["raw_mass"].mean()
@@ -1006,7 +1005,7 @@ def ConcludeResultsMain(settings, eval_tm, sizes_df_lin, diff_direct_lin, traj_l
     
     red_x = RedXOutOfMsdFit(msd_fit_para[0], msd_fit_para[1], lagtime)
                     
-#     get the fit error if switches on (and working)
+    # get the fit error if switched on (and working)
     rel_error_diff, diff_std = DiffusionError(traj_length, red_x, diff_direct_lin, lagtimes_max)
 
     diameter = DiffusionToDiameter(diff_direct_lin, UseHindranceFac, fibre_diameter_nm, 
@@ -1019,7 +1018,7 @@ def ConcludeResultsMain(settings, eval_tm, sizes_df_lin, diff_direct_lin, traj_l
                            red_x, max_step, true_particle, stat_sign = stat_sign,
                            start_x=start_x, start_y=start_y)
     else:
-        nd.logger.error("This is not implemented yet.")
+        nd.logger.error("ConcludeResultsMain for Rolling is not implemented yet.")
 
     return sizes_df_lin
 
@@ -1302,6 +1301,9 @@ def hindrance_fac(diam_channel,diam_particle):
 def local_hindrance_fac(H, my_lambda):
     """ cf. "Hindrance Factors for Diffusion and Convection in Pores", 
     Dechadilok and Deen (2006)
+    
+    my_lambda : relative particle size, i.e. diameter_particle / diameter_channel
+    H         : hindrance factor
     """
     #Eq. 9
     Phi = (1-my_lambda)**2
