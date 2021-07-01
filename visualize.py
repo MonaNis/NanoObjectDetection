@@ -409,9 +409,14 @@ def PlotDiameterHistogramm(sizes, binning, histogramm_min = 0, histogramm_max = 
     show_diameters = diameters[(diameters >= histogramm_min) & (diameters <= histogramm_max)]
     values_hist, positions_hist = np.histogram(sizes, bins = binning)
     # histogram of sizes, only taking into account 
-    sns.distplot(show_diameters, bins=binning, rug=True, rug_kws={"alpha": 0.4}, 
-                 kde=False,color=mycol) 
-    #those that are below threshold size as defined in the initial parameters
+    # those that are below threshold size as defined in the initial parameters
+    # sns.distplot(show_diameters, bins=binning, #rug=True, rug_kws={"alpha": 0.4}, 
+    #              kde=False,color=mycol, hist_kws={"alpha": 1}) 
+    sns.histplot(show_diameters, bins=binning, 
+                 kde=False, color=mycol, alpha=1, element='step',# stat='probability',
+                 ax=ax, line_kws={'linewidth':0})
+    # sns.rugplot(show_diameters, color=mycol)
+    
 #    plt.rc('text', usetex=True)
     plt.rc('text', usetex=False)
     plt.title(title, **title_font)
@@ -599,14 +604,18 @@ def DiameterHistogramm(ParameterJsonFile, sizes_df_lin, histogramm_min = None,
 
     ax, values_hist, positions_hist = \
         nd.visualize.PlotDiameterHistogramm(sizes, binning, histogramm_min, 
-                                            histogramm_max, title, xlabel, ylabel)
+                                            histogramm_max, title, xlabel, ylabel,
+                                            mycol=(53/255,59/255,89/255))
+    # IPHTgr = (140/255,189/255,58/255)
+    # IPHTtu = (58/255,146/255,117/255)
+    # IPHTbl = (53/255,59/255,89/255)
     if showInvHist:
         inv_diams = 1000/sizes # 1/um
         ax0, values_invHist, positions_invHist = \
             PlotDiameterHistogramm(inv_diams, 40, histogramm_min = inv_diams.min(), 
                                    histogramm_max = inv_diams.max(), 
                                    xlabel=r'Inv. diameter [1/$\mu$m]', 
-                                   ylabel=ylabel, title=title, mycol='C3')
+                                   ylabel=ylabel, title=title, mycol=(58/255,146/255,117/255))#'C3')
         max_invHist = values_invHist.max()
     else:
         ax0 = 'none'
@@ -645,7 +654,8 @@ def DiameterHistogramm(ParameterJsonFile, sizes_df_lin, histogramm_min = None,
                                                    num_dist_max=num_dist_max,
                                                    showICplot=showICplot, axInv=ax0,
                                                    max_hist_inv=max_invHist, 
-                                                   showInvHist=showInvHist)
+                                                   showInvHist=showInvHist,
+                                                   showInfobox=showInfobox)
                 # weights should be the same, no matter if inverse or not
                 # CVs as well (at least approximately)
             
@@ -935,15 +945,16 @@ def PlotReciprGauss1Size(ax, diam_grid, diam_grid_stepsizes, max_y, sizes, fitIn
     # diam_grid_stepsize = diam_grid[1] - diam_grid[0] # equidistant grid (!)
     
     if fitInvSizes:
-        mycolor = 'C3'
+        mycolor = 'gray'#'C3'
         
         diam_inv_mean, diam_inv_std, diam_inv_median, diam_inv_CI68, diam_inv_CI95 = \
             nd.statistics.StatisticInvMonoDistribution(sizes)
             
         diam_grid_inv = 1000/diam_grid # 1/um
         
+        diam_inv_std_q = (diam_inv_CI68[1]-diam_inv_CI68[0])/2
         prob_diam_inv_1size = \
-            scipy.stats.norm(diam_inv_mean,diam_inv_std).pdf(diam_grid_inv)
+            scipy.stats.norm(diam_inv_mean,diam_inv_std_q).pdf(diam_grid_inv)
         
         # law of inverse fcts:
         prob_diam_1size = 1/(diam_grid**2) * prob_diam_inv_1size
@@ -962,7 +973,7 @@ def PlotReciprGauss1Size(ax, diam_grid, diam_grid_stepsizes, max_y, sizes, fitIn
         #                                             diam_grid_stepsize*np.ones_like(diam_grid))
         # print(CI68)
     else:
-        mycolor = 'C2'
+        mycolor = 'gray'#'C2'
         mean, std, median = nd.statistics.GetMeanStdMedian(sizes)
         CV = std/mean
         
@@ -970,7 +981,7 @@ def PlotReciprGauss1Size(ax, diam_grid, diam_grid_stepsizes, max_y, sizes, fitIn
             scipy.stats.norm(mean,std).pdf(diam_grid)
             
     # scale it up to match histogram (or PDF) plot
-    prob_diam_1size = prob_diam_1size / prob_diam_1size.max() * max_y
+    prob_diam_1size = prob_diam_1size / prob_diam_1size.max() * max_y *0.8
     
     # print('median={}, CI68=[{},{}]'.format(1000/diam_inv_median,1000/diam_inv_CI68[0],1000/diam_inv_CI68[1]))
     ax.plot(diam_grid,prob_diam_1size,color=mycolor)
@@ -980,7 +991,7 @@ def PlotReciprGauss1Size(ax, diam_grid, diam_grid_stepsizes, max_y, sizes, fitIn
     
 def PlotReciprGaussNSizes(ax, diam_grid, grid_stepsizes, max_y, sizes, fitInvSizes,
                           num_dist_max=2, useAIC=False, showICplot=False, axInv='none', 
-                          max_hist_inv=1, showInvHist=False):
+                          max_hist_inv=1, showInvHist=False, showInfobox=True):
     """ plot the (reciprocal) fcts of Gaussian fits on top of a histogram
         
     diam_grid : np.ndarray; plotting grid [nm]
@@ -1027,9 +1038,10 @@ def PlotReciprGaussNSizes(ax, diam_grid, grid_stepsizes, max_y, sizes, fitInvSiz
             dsum = normFactor * dsum
             dist = normFactor * dist # and the individual distributions accordingly
             
-            axInv.plot(grid,dist.transpose(),ls='--')
+            axInv.plot(grid,dist.transpose(),ls='--',color='k')
             axInv.plot(grid,dist.sum(axis=0),color='k')
-            PlotInfoboxMN(axInv, means, CVs, weights, means, unit=r'1/$\mu$m', resInt='')
+            if showInfobox:
+                PlotInfoboxMN(axInv, means, CVs, weights, means, unit=r'1/$\mu$m', resInt='')
         
         # convert the individual PDFs back to sizes space
         pdfs = []
@@ -1062,7 +1074,7 @@ def PlotReciprGaussNSizes(ax, diam_grid, grid_stepsizes, max_y, sizes, fitInvSiz
     dsum = normFactor * dsum
     dist = normFactor * dist # ... and the individual distributions accordingly
     
-    ax.plot(grid,dist.transpose(),ls='--')
+    ax.plot(grid,dist.transpose(),ls='--',color='k')
     ax.plot(grid,dist.sum(axis=0),color='k')
     
     # sort the parameters from lowest to highest mean value

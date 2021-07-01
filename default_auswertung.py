@@ -47,7 +47,14 @@ settings = nd.handle_data.ReadJson(ParameterJsonFile)
 
 nd.AdjustSettings.Main(rawframes_super, rawframes_pre, ParameterJsonFile)
    
-""" set 'tp_minmass' to 75% of the automatically found value  """
+#%% set 'tp_minmass' to 75% of the automatically found value
+settings = nd.handle_data.ReadJson(ParameterJsonFile)
+tp_minmass = settings["Find"]["tp_minmass"]
+tp_min_new = int(tp_minmass * 0.75)
+settings["Find"]["tp_minmass"] = tp_min_new
+print('New value for tp_minmass: {}'.format(tp_min_new))
+nd.handle_data.WriteJson(ParameterJsonFile, settings)
+
 #%% check 1 annotated raw frame
 from trackpy import annotate
 
@@ -114,10 +121,10 @@ t6_final = nd.get_trajectorie.filter_stubs(t4_cutted, ParameterJsonFile, FixedPa
 
 
 #%% calculate the MSD and process to diffusion and diameter
-sizes_df_lin, any_successful_check = nd.CalcDiameter.Main2(t6_final, ParameterJsonFile, 
+sizes_df_lin, asc = nd.CalcDiameter.Main2(t6_final, ParameterJsonFile, 
                                                            MSD_fit_Show = True,t_beforeDrift = t4_cutted)
 
-#sizes_df_lin, any_successful_check = nd.CalcDiameter.OptimizeTrajLenght(t6_final, ParameterJsonFile, obj_all, MSD_fit_Show = True, t_beforeDrift = t4_cutted)
+#sizes_df_lin, asc = nd.CalcDiameter.OptimizeTrajLenght(t6_final, ParameterJsonFile, obj_all, MSD_fit_Show = True, t_beforeDrift = t4_cutted)
 
 
 # #%% re-import sizes_df
@@ -125,7 +132,7 @@ sizes_df_lin, any_successful_check = nd.CalcDiameter.Main2(t6_final, ParameterJs
 
 #%% visualize results
 nd.visualize.PlotDiameters(ParameterJsonFile, sizes_df_lin,#[sizes_df_lin['valid frames']>=1000], 
-                           any_successful_check)
+                           asc)
 
 #%% further plotting
 Nfmin = 1000
@@ -140,4 +147,40 @@ nd.sandbox.DiameterOverTrajLengthColored(ParameterJsonFile,
                                          sizes_df_lin[sizes_df_lin['valid frames']>=500],
                                          use_log=True)
 
+
+#%% cutting without KS in t6
+NfList = np.array([100.,200.,300.,600.,1000.,2000.,3000.])
+
+sizesCUT_noKSint6 = []
+stats = []
+for Nf in NfList:
+    
+    settings = nd.handle_data.ReadJson(ParameterJsonFile)
+    settings["Link"]["Min_tracking_frames"] = Nf
+    settings["Split"]["Max_traj_length"] = Nf
+    nd.handle_data.WriteJson(ParameterJsonFile, settings)
+    
+    sizes_here, _ = nd.CalcDiameter.Main2(t6_final, ParameterJsonFile, 
+                                          MSD_fit_Show = True)
+    stats_here = nd.statistics.StatisticMonoDistribution(sizes_here)
+    
+    sizesCUT_noKSint6.append(sizes_here)
+    stats.append(stats_here)
+
+sizesCUT_noKSinT6 = pd.concat(sizesCUT_noKSint6,ignore_index=True)
+
+#%% save and print results
+sizesCUT_noKSinT6.to_csv('\\\\mars\\user\\nissenmona\\4 Nanoparticle detection+tracking\\Au_OlympusSetup\\20210208_P125\\DataAnalysis\\v5_620fps_150usET_superlong\\sizesCUTall_noKSinT6.csv') 
+
+for n,Nf in enumerate(NfList):
+    print(len(sizesCUT_noKSinT6[sizesCUT_noKSinT6['valid frames']==Nf]))
+    print(stats[n])
+    
+#%% evaluate stats of full tracks, weighted (!)
+for Nfm in NfList:
+    sizes_Nfm = sizes_df_lin[sizes_df_lin['valid frames']>=Nfm]
+    sizes_here = sizes_Nfm.diameter#.repeat(np.array(sizes_Nfm['valid frames'],dtype='int'))
+    
+    print(len(sizes_here))
+    print(nd.statistics.StatisticMonoDistribution(sizes_here))
 

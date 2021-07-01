@@ -11,6 +11,7 @@ from matplotlib.gridspec import GridSpec
 from pdb import set_trace as bp #debugger
 from joblib import Parallel, delayed
 import multiprocessing
+import pandas as pd
 
 ## In[]
 def RollingMedianFilter_main(image, window = 11):
@@ -195,6 +196,42 @@ def TryTextBox2():
 Mona's section 
 ###############################################################################
 """ 
+def evaluatedTracksPerFrame(sizes_df_lin):
+    """ compute the number of tracks that were evaluated in each frame
+    out of a sizes DataFrame
+    cf. 2D histogram plotting fct
+
+    returns: pd.Series
+    """
+    sizes_df_lin = sizes_df_lin.set_index("true_particle")
+    first_element = True # ... for array initialization only
+    
+    # iterate over results' DataFrame 
+    # NB: particle_data is pd.Series type (with previous column names as index)
+    for particle_index, particle_data in sizes_df_lin.iterrows():
+        # get frame of first appearance and tracklength
+        ii_first_frame = int(particle_data["first frame"])
+        ii_traj_length = int(particle_data["traj length"])
+        # compute frame of last appearance
+        ii_last_frame = ii_first_frame + ii_traj_length - 1
+        
+        # fill matrix with frames of appearance 
+        appearances_ii = np.linspace(ii_first_frame,ii_last_frame,ii_traj_length)
+        
+        if first_element == True: # initialize results' array
+            frames_of_appearance = appearances_ii
+            first_element = False
+        else: # build matrix of frame numbers where analyzed particles appear
+            frames_of_appearance = np.concatenate((frames_of_appearance,appearances_ii), 
+                                                  axis = 0)
+    
+    frms = pd.Series(data=frames_of_appearance) # convert to pd.Series
+    # vid_length = frms.nunique() # total length of the video
+    tracks_per_frame = frms.value_counts() # counts of unique values :)
+    
+    return tracks_per_frame 
+
+
     
 def DiameterOverTrajLengthColored(ParameterJsonFile, sizes_df_lin, 
                                   color_by='mass', use_log=False,
