@@ -53,7 +53,8 @@ def GetCI_Interval(probability, grid, ratio_in_ci):
 
 def GetMeanStdMedian(data):
     my_mean   = np.mean(data)
-    my_std    = np.std(data)
+    my_std    = np.std(data,ddof=1) # for "corrected" sample standard dev.
+    # https://en.wikipedia.org/wiki/Standard_deviation#Corrected_sample_standard_deviation
     my_median = np.median(data)
 
     return my_mean, my_std, my_median   
@@ -185,9 +186,9 @@ def StatisticMonoDistribution(sizes):
     # values from quantiles (!)
     CI68 = 1000/diam_inv_CI68[::-1] # invert order
     CI95 = 1000/diam_inv_CI95[::-1]
-    mean_inv = 1000/diam_inv_mean # MN: This is misleading, I think
+    mean_inv = 1000/diam_inv_mean 
     mean = sizes.mean()
-    diam_std = sizes.std()
+    diam_std = sizes.std(ddof=1) # for "corrected" standard deviation
     CV = diam_std/mean
     
     # return diam_mean, diam_std, diam_inv_mean, diam_inv_std, diam_inv_median, diam_inv_CI68, diam_inv_CI95
@@ -234,7 +235,10 @@ def StatisticDistribution(sizesInv, num_dist_max=10, showICplot=False, useAIC=Fa
     models = [None for i in range(len(N))]
 
     for i in range(len(N)):
-        models[i] = GaussianMixture(N[i],covariance_type='spherical').fit(sizesInv) 
+        models[i] = GaussianMixture(N[i],covariance_type='spherical',
+                                    max_iter=1000, tol=1E-6, 
+                                    random_state=0
+                                    ).fit(sizesInv) 
         # default is 'full', but this is only needed for data dimensions >1
        
     # https://en.wikipedia.org/wiki/Akaike_information_criterion
@@ -262,7 +266,7 @@ def StatisticDistribution(sizesInv, num_dist_max=10, showICplot=False, useAIC=Fa
     else:
         minICindex = np.argmin(BIC)
     M_best = models[minICindex] # choose model where AIC is smallest
-    nd.logger.info('Number of components considered: {}'.format(N[minICindex]))
+    nd.logger.debug('Number of components considered: {}'.format(N[minICindex]))
 
     means = M_best.means_.flatten()
     stds = (M_best.covariances_.flatten())**0.5
@@ -274,7 +278,7 @@ def StatisticDistribution(sizesInv, num_dist_max=10, showICplot=False, useAIC=Fa
     stds = stds[sortedIndices]
     weights = weights[sortedIndices]
     
-    nd.logger.info('Number of iterations performed: {}'.format(M_best.n_iter_))
+    nd.logger.debug('Number of iterations performed: {}'.format(M_best.n_iter_))
     
     return means, stds, weights
 

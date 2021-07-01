@@ -914,8 +914,7 @@ def DiameterToDiffusion(temp_water,visc_water,diameter):
 
 
 def Drift(ParameterJsonFile, num_particles_per_frame):
-    """
-    Calculates how many frames are requires to get a good estimation of the drift
+    """ calculates how many frames are required to get a good estimation of the drift
     """
     
     settings = nd.handle_data.ReadJson(ParameterJsonFile)
@@ -924,10 +923,10 @@ def Drift(ParameterJsonFile, num_particles_per_frame):
     # averaging over many frames leads to more datapoints and thus to a better estimation
     # on the other hand drift changes - so averaging over many time frames reduces the temporal resolution
     
-    # I assume that 1000 particles need to be averaged to separte drift from random motion
+    # I assume that 1000 particle motion steps need to be averaged to separte drift from random motion
     required_particles = 1000
 
-    #average_frames is applied in tp.drift. It is the number of >additional< follwing frames a drift is calculated. Meaning if a frame has 80 particles, it needs 2 frames to have more than 100 particles to average about. These two frame is the current and 1 addition one. That's why floor is used.
+    # average_frames is applied in tp.drift. It is the number of >additional< follwing frames a drift is calculated. Meaning if a frame has 80 particles, it needs 2 frames to have more than 100 particles to average about. These two frame is the current and 1 addition one. That's why floor is used.
     average_frames = int(np.floor(required_particles/num_particles_per_frame))
 
     settings["Drift"]["Drift smoothing frames"] = average_frames

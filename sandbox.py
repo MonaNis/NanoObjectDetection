@@ -6,6 +6,7 @@ Created on Tue Mar 10 13:45:19 2020
 """
 import numpy as np # library for array-manipulation
 import matplotlib.pyplot as plt # libraries for plotting
+import pandas as pd
 from matplotlib.animation import FuncAnimation
 from matplotlib.gridspec import GridSpec
 from pdb import set_trace as bp #debugger
@@ -224,7 +225,7 @@ def evaluatedTracksPerFrame(sizes_df_lin):
         else: # build matrix of frame numbers where analyzed particles appear
             frames_of_appearance = np.concatenate((frames_of_appearance,appearances_ii), 
                                                   axis = 0)
-    
+
     frms = pd.Series(data=frames_of_appearance) # convert to pd.Series
     # vid_length = frms.nunique() # total length of the video
     tracks_per_frame = frms.value_counts() # counts of unique values :)
@@ -232,7 +233,7 @@ def evaluatedTracksPerFrame(sizes_df_lin):
     return tracks_per_frame 
 
 
-    
+
 def DiameterOverTrajLengthColored(ParameterJsonFile, sizes_df_lin, 
                                   color_by='mass', use_log=False,
                                   save_plot = True):

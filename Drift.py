@@ -52,9 +52,9 @@ def Main(t_drift, ParameterJsonFile, Do_transversal_drift_correction = None, dri
         
         
         if settings["Help"]["Drift"] == "auto":
-            #estimate how many frames it needs to have enough particle to make the drift estimation
+            # estimate how many frames it needs to have enough particles for the drift estimation
             num_particles_per_frame = t_drift.groupby("frame")["particle"].count().mean()
-
+            
             nd.ParameterEstimation.Drift(ParameterJsonFile, num_particles_per_frame)
 
         
@@ -109,16 +109,20 @@ def Main(t_drift, ParameterJsonFile, Do_transversal_drift_correction = None, dri
 
 
 def GlobalEstimation(t_drift, drift_smoothing_frames):
-    """
-    Estimates the drift for all particles in a frame together
-    Attention: This ignores laminar flow, but needs fewer frames (and thus time) to get a good estimation
+    """ estimates the drift for all particles in a frame at once,
+    makes use of trackpy's compute_drift function
+    
+    Attention: This ignores laminar flow, but needs fewer frames (and thus time) 
+               to get a good estimation.
     """
     nd.logger.info("Mode: global drift correction (frame per frame)")
             
     # calculate the overall drift (e.g. drift of setup or flow of particles)
     my_drift = tp.compute_drift(t_drift, drift_smoothing_frames) 
     
-    # There is is a bug in tracky. If there is no particle in a frame, it will sometimes not calculate the drift in the next frame with a particle. So a small workaround here
+    # There is is a bug in tracky. If there is no particle in a frame, 
+    # it will sometimes not calculate the drift in the next frame with a particle. 
+    # So a small workaround here:
     
     # get a list of all frames
     full_index = t_drift.frame.sort_values().unique()
@@ -133,6 +137,7 @@ def GlobalEstimation(t_drift, drift_smoothing_frames):
     t_no_drift = t_no_drift.drop(columns = "frame").reset_index()
 
     return t_no_drift, my_drift
+
 
 
 def TransversalEstimation(settings, t_drift, drift_smoothing_frames, rolling_window_size, min_particle_per_block):
