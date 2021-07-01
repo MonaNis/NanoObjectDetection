@@ -19,8 +19,9 @@ import NanoObjectDetection_Mfork as nd
 
 
 #%% path of parameter file
+filepath = '\\\\mars\\user\\nissenmona\\4 Nanoparticle detection+tracking\\Au_OlympusSetup\\...\\DataAnalysis\\...\\'
 # this must be replaced by any json file
-ParameterJsonFile = '\\\\mars\\user\\nissenmona\\4 Nanoparticle detection+tracking\\Au_OlympusSetup\\...\\DataAnalysis\\...\\parameter.json'
+ParameterJsonFile = filepath + 'parameter.json'
 
 
 #%% check if the python version and the library are good
@@ -116,19 +117,19 @@ t5_no_drift = nd.Drift.Main(t4_cutted, ParameterJsonFile, PlotGlobalDrift = True
 t6_final = nd.get_trajectorie.filter_stubs(t4_cutted, ParameterJsonFile, FixedParticles = False, BeforeDriftCorrection = False, PlotErrorIfTestFails = False, ErrorCheck = False)
 
 # #%% export/import t6_final
-# t6_final.to_csv('\\\\mars\\user\\nissenmona\\4 Nanoparticle detection+tracking\\Au_OlympusSetup\\20210208_P100+125mix\\DataAnalysis\\v6_620fps_220usET_longer\\t6_final.csv',sep='\t',decimal=',')
-# t6_final = pd.read_csv('\\\\mars\\user\\nissenmona\\4 Nanoparticle detection+tracking\\Au_OlympusSetup\\20210208_P100+125mix\\DataAnalysis\\v6_620fps_220usET_longer\\t6_final.csv',sep='\t',decimal=',')
+# t6_final.to_csv(filepath+'t6_final.csv',sep='\t',decimal=',')
+# t6_final = pd.read_csv(filepath+'t6_final.csv',sep='\t',decimal=',')
 
 
 #%% calculate the MSD and process to diffusion and diameter
 sizes_df_lin, asc = nd.CalcDiameter.Main2(t6_final, ParameterJsonFile, 
-                                                           MSD_fit_Show = True,t_beforeDrift = t4_cutted)
+                                          MSD_fit_Show = True,t_beforeDrift = t4_cutted)
 
 #sizes_df_lin, asc = nd.CalcDiameter.OptimizeTrajLenght(t6_final, ParameterJsonFile, obj_all, MSD_fit_Show = True, t_beforeDrift = t4_cutted)
 
 
 # #%% re-import sizes_df
-# sizes_df = pd.read_csv('\\\\mars\\user\\nissenmona\\4 Nanoparticle detection+tracking\\Au_OlympusSetup\\20210208_P100+125mix\\DataAnalysis\\v6_620fps_220usET_longer\\210302\\12_23_32_sizes_df_lin.csv')
+# sizes_df = pd.read_csv(filepath+'210302\\12_23_32_sizes_df_lin.csv')
 
 #%% visualize results
 nd.visualize.PlotDiameters(ParameterJsonFile, sizes_df_lin,#[sizes_df_lin['valid frames']>=1000], 
@@ -152,7 +153,9 @@ nd.sandbox.DiameterOverTrajLengthColored(ParameterJsonFile,
 NfList = np.array([100.,200.,300.,600.,1000.,2000.,3000.])
 
 sizesCUT_noKSint6 = []
-stats = []
+stats = pd.DataFrame(index=NfList,
+                     columns=['N', 'median', 'mean', 'CV', 'mean_inv', 'CV_inv', 
+                              'CI68l', 'CI68r', 'CV_CI68', 'CI95l', 'CI95r'])
 for Nf in NfList:
     
     settings = nd.handle_data.ReadJson(ParameterJsonFile)
@@ -162,25 +165,35 @@ for Nf in NfList:
     
     sizes_here, _ = nd.CalcDiameter.Main2(t6_final, ParameterJsonFile, 
                                           MSD_fit_Show = True)
-    stats_here = nd.statistics.StatisticMonoDistribution(sizes_here)
+    stats.loc[Nf] = nd.statistics.PrintStatsMono(sizes_here)
     
     sizesCUT_noKSint6.append(sizes_here)
-    stats.append(stats_here)
 
 sizesCUT_noKSinT6 = pd.concat(sizesCUT_noKSint6,ignore_index=True)
 
-#%% save and print results
-sizesCUT_noKSinT6.to_csv('\\\\mars\\user\\nissenmona\\4 Nanoparticle detection+tracking\\Au_OlympusSetup\\20210208_P125\\DataAnalysis\\v5_620fps_150usET_superlong\\sizesCUTall_noKSinT6.csv') 
 
-for n,Nf in enumerate(NfList):
-    print(len(sizesCUT_noKSinT6[sizesCUT_noKSinT6['valid frames']==Nf]))
-    print(stats[n])
+#%% save results
+sizesCUT_noKSinT6.to_csv(filepath+'sizesCUTall_noKSinT6.csv') 
+stats.to_csv(filepath+'statsCUT_unw.csv')
+
     
-#%% evaluate stats of full tracks, weighted (!)
+#%% evaluate stats of full tracks
+
+statsFull_unw = pd.DataFrame(index=NfList,
+                             columns=['N', 'median', 'mean', 'CV', 'mean_inv', 'CV_inv', 
+                                      'CI68l', 'CI68r', 'CV_CI68', 'CI95l', 'CI95r'])
+statsFull_w = pd.DataFrame(index=NfList,
+                           columns=['N', 'median', 'mean', 'CV', 'mean_inv', 'CV_inv', 
+                                    'CI68l', 'CI68r', 'CV_CI68', 'CI95l', 'CI95r'])
+
 for Nfm in NfList:
     sizes_Nfm = sizes_df_lin[sizes_df_lin['valid frames']>=Nfm]
-    sizes_here = sizes_Nfm.diameter#.repeat(np.array(sizes_Nfm['valid frames'],dtype='int'))
+    sizes_unw = sizes_Nfm.diameter
+    sizes_w = sizes_Nfm.diameter.repeat(np.array(sizes_Nfm['valid frames'],dtype='int'))
     
-    print(len(sizes_here))
-    print(nd.statistics.StatisticMonoDistribution(sizes_here))
+    statsFull_unw.loc[Nf] = nd.statistics.PrintStatsMono(sizes_unw,doPrint=False)
+    statsFull_w.loc[Nf] = nd.statistics.PrintStatsMono(sizes_w,doPrint=False)
 
+
+statsFull_unw.to_csv(filepath+'statsFULL_unw.csv')
+statsFull_w.to_csv(filepath+'statsFULL_w.csv')

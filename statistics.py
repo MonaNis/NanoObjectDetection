@@ -193,6 +193,23 @@ def StatisticMonoDistribution(sizes):
     
     # return diam_mean, diam_std, diam_inv_mean, diam_inv_std, diam_inv_median, diam_inv_CI68, diam_inv_CI95
     return (mean_inv, CV_inv, mean, CV, median, CI68, CI95)
+
+
+
+def PrintStatsMono(sizes,doPrint=True):
+    """ print number of values, median, mean, CV, mean_inv, CV_inv, 
+    CI68_left, CI68_right, CV_CI68 (:= CI68/(2*median)), CI95_left, CI95_right
+    
+    convenience function for easy data export
+    """
+    mean_inv, CV_inv, mean, CV, median, CI68, CI95 = nd.statistics.StatisticMonoDistribution(sizes)
+    N = len(sizes)
+    CV_CI68 = (CI68[1]-CI68[0])/(2*median)
+    stats = [N, median, mean, CV, mean_inv, CV_inv, CI68[0], CI68[1], CV_CI68, 
+             CI95[0], CI95[1]]
+    if doPrint:
+        print(*stats)
+    return stats
     
     
 
